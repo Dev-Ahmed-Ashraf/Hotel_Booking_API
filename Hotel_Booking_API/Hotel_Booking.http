@@ -1,0 +1,53 @@
+@Hotel_Booking_API_HostAddress = https://localhost:7145
+@Token = your_jwt_token_here
+
+### Register a new user
+POST {{Hotel_Booking_API_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePass123!",
+  "firstName": "John",
+  "lastName": "Doe",
+  "role": 0
+}
+
+### Login user
+POST {{Hotel_Booking_API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@hotelbooking.com",
+  "password": "Admin123!"
+}
+
+### Get all hotels (public endpoint)
+GET {{Hotel_Booking_API_HostAddress}}/api/hotels?pageNumber=1&pageSize=10
+Accept: application/json
+
+### Get hotels with search filters
+GET {{Hotel_Booking_API_HostAddress}}/api/hotels?city=New York&minRating=4.0
+Accept: application/json
+
+### Create a new hotel (Admin only)
+POST {{Hotel_Booking_API_HostAddress}}/api/hotels
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "name": "Luxury Resort & Spa",
+  "description": "A beautiful luxury resort with spa facilities and ocean views",
+  "address": "789 Resort Boulevard",
+  "city": "Miami",
+  "country": "USA",
+  "rating": 4.8
+}
+
+### Get hotels by city
+GET {{Hotel_Booking_API_HostAddress}}/api/hotels?city=Miami
+Accept: application/json
+
+### Get hotels by rating range
+GET {{Hotel_Booking_API_HostAddress}}/api/hotels?minRating=4.0&maxRating=5.0
+Accept: application/json
