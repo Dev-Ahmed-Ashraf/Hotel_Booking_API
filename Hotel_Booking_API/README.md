@@ -57,10 +57,10 @@ This API follows **Clean Architecture** principles with the following layers:
 
 3. **Update connection string** (if needed)
    
-   The default connection string in `appsettings.json` uses LocalDB:
+   The default connection string in `appsettings.json` uses SQL Server:
    ```json
    "ConnectionStrings": {
-     "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=HotelBookingDb;Trusted_Connection=true;MultipleActiveResultSets=true"
+     "DefaultConnection": "Server=.;Database=HotelBookingDb;Trusted_Connection=true;TrustServerCertificate=True;"
    }
    ```
 
@@ -70,8 +70,8 @@ This API follows **Clean Architecture** principles with the following layers:
    ```
 
 5. **Access the API**
-   - API Base URL: `https://localhost:7145`
-   - Swagger UI: `https://localhost:7145` (root URL)
+   - API Base URL: `https://localhost:7062`
+   - Swagger UI: `https://localhost:7062/swagger`
    - API Documentation: Available through Swagger UI
 
 ### Database Setup
@@ -194,7 +194,7 @@ Use the provided `Hotel_Booking.http` file with VS Code REST Client extension or
 
 1. **Register a new user**:
    ```http
-   POST https://localhost:7145/api/auth/register
+   POST https://localhost:7062/api/auth/register
    Content-Type: application/json
 
    {
@@ -208,7 +208,7 @@ Use the provided `Hotel_Booking.http` file with VS Code REST Client extension or
 
 2. **Login**:
    ```http
-   POST https://localhost:7145/api/auth/login
+   POST https://localhost:7062/api/auth/login
    Content-Type: application/json
 
    {
@@ -219,7 +219,7 @@ Use the provided `Hotel_Booking.http` file with VS Code REST Client extension or
 
 3. **Get hotels**:
    ```http
-   GET https://localhost:7145/api/hotels?pageNumber=1&pageSize=10
+   GET https://localhost:7062/api/hotels?pageNumber=1&pageSize=10
    ```
 
 ## 📁 Project Structure
