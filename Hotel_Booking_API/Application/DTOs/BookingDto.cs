@@ -30,7 +30,6 @@ namespace Hotel_Booking_API.Application.DTOs
     {
         public DateTime? CheckInDate { get; set; }
         public DateTime? CheckOutDate { get; set; }
-        public BookingStatus? Status { get; set; }
     }
 
     public class SearchBookingsDto

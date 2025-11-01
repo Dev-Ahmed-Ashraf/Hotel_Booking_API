@@ -62,8 +62,8 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Queries.GetRooms
                     query = query.Where(r => r.Type == search.Type.Value);
 
                 // Filter by availability
-                if (search.IsAvailable.HasValue)
-                    query = query.Where(r => r.IsAvailable == search.IsAvailable.Value);
+                //if (search.IsAvailable.HasValue)
+                //    query = query.Where(r => r.IsAvailable == search.IsAvailable.Value);
 
                 // Filter by price range
                 if (search.MinPrice.HasValue)
@@ -101,7 +101,7 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Queries.GetRooms
                     RoomNumber = r.RoomNumber,
                     Type = r.Type,
                     Price = r.Price,
-                    IsAvailable = r.IsAvailable,
+                    //IsAvailable = r.IsAvailable,
                     Capacity = r.Capacity,
                     Description = r.Description,
                     CreatedAt = r.CreatedAt

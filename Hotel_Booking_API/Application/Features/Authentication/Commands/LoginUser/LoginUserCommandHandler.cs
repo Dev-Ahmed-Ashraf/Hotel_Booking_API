@@ -2,6 +2,7 @@ using MediatR;
 using AutoMapper;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Domain.Interfaces;
 using Hotel_Booking_API.Infrastructure.Services;
 
@@ -28,7 +29,7 @@ namespace Hotel_Booking_API.Application.Features.Authentication.Commands.LoginUs
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.LoginDto.Password, user.PasswordHash))
             {
-                return ApiResponse<AuthResponseDto>.ErrorResponse("Invalid email or password.");
+                throw new UnauthorizedException("Invalid email or password.");
             }
 
             // Generate JWT token

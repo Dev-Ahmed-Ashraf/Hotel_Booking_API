@@ -1,4 +1,5 @@
 ﻿using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
 using Serilog;
@@ -40,13 +41,13 @@ namespace Hotel_Booking_API.Application.Features.Hotels.Commands.DeleteHotel
                 if (hotel == null)
                 {
                     Log.Warning("Hotel not found: {HotelId}", request.Id);
-                    return ApiResponse<string>.ErrorResponse($"Hotel with ID {request.Id} not found.");
+                    throw new NotFoundException("Hotel", request.Id);
                 }
 
                 if (hotel.IsDeleted)
                 {
                     Log.Warning("Hotel already deleted: {HotelId}", request.Id);
-                    return ApiResponse<string>.ErrorResponse($"Hotel with ID {request.Id} is already deleted.");
+                    throw new BadRequestException($"Hotel with ID {request.Id} is already deleted.");
                 }
 
                 // Check for active bookings if not forcing deletion
@@ -68,9 +69,7 @@ namespace Hotel_Booking_API.Application.Features.Hotels.Commands.DeleteHotel
                         {
                             var bookingIds = string.Join(", ", activeBookings.Select(b => b.Id));
                             Log.Warning("Cannot delete hotel with active bookings: {HotelId}, BookingIds: {BookingIds}", request.Id, bookingIds);
-                            return ApiResponse<string>.ErrorResponse(
-                                $"Cannot delete hotel '{hotel.Name}' because it has active bookings (IDs: {bookingIds}). " +
-                                "Use ForceDelete=true to override this check, but this may cause data integrity issues.");
+                            throw new BadRequestException($"Cannot delete hotel '{hotel.Name}' because it has active bookings (IDs: {bookingIds}). Use ForceDelete=true to override this check, but this may cause data integrity issues.");
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 using AutoMapper;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
@@ -45,7 +46,7 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Queries.GetRoomById
                 if (room == null || room.IsDeleted)
                 {
                     Log.Warning("Room not found or deleted: {RoomId}", request.Id);
-                    return ApiResponse<RoomDto>.ErrorResponse("Room not found.");
+                    throw new NotFoundException("Room", request.Id);
                 }
 
                 // Map entity to DTO for response

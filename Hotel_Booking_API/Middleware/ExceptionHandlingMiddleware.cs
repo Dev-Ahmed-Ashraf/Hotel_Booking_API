@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using FluentValidation;
 using System.Net;
+using Hotel_Booking_API.Application.Common.Exceptions;
 
 namespace Hotel_Booking_API.Middleware
 {
@@ -33,50 +34,75 @@ namespace Hotel_Booking_API.Middleware
         {
             context.Response.ContentType = "application/json";
 
-            var response = new ProblemDetails();
+            var statusCode = (int)HttpStatusCode.InternalServerError;
+            var title = "Internal Server Error";
+            var message = "An error occurred while processing your request.";
+            object? errors = null;
 
             switch (exception)
             {
                 case ValidationException validationException:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response.Title = "Validation Error";
-                    response.Status = (int)HttpStatusCode.BadRequest;
-                    response.Detail = "One or more validation errors occurred.";
-                    response.Extensions["errors"] = validationException.Errors
+                    statusCode = (int)HttpStatusCode.BadRequest;
+                    title = "Validation Error";
+                    message = "One or more validation errors occurred.";
+                    errors = validationException.Errors
                         .GroupBy(e => e.PropertyName)
                         .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
                     break;
 
-                case ArgumentException argumentException:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response.Title = "Bad Request";
-                    response.Status = (int)HttpStatusCode.BadRequest;
-                    response.Detail = argumentException.Message;
+                case BadRequestException bre:
+                    statusCode = (int)HttpStatusCode.BadRequest;
+                    title = "Bad Request";
+                    message = bre.Message;
                     break;
 
-                case UnauthorizedAccessException:
-                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    response.Title = "Unauthorized";
-                    response.Status = (int)HttpStatusCode.Unauthorized;
-                    response.Detail = "You are not authorized to perform this action.";
+                case UnauthorizedException ue:
+                case UnauthorizedAccessException ue2:
+                    { 
+                    statusCode = (int)HttpStatusCode.Unauthorized;
+                    title = "Unauthorized";
+                    message = (exception as Exception).Message;
+                    break;
+                }
+                case ForbiddenException fe:
+                    statusCode = (int)HttpStatusCode.Forbidden;
+                    title = "Forbidden";
+                    message = fe.Message;
                     break;
 
-                case KeyNotFoundException:
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    response.Title = "Not Found";
-                    response.Status = (int)HttpStatusCode.NotFound;
-                    response.Detail = "The requested resource was not found.";
+                case NotFoundException nfe:
+                case KeyNotFoundException knf:
+                    {
+                        statusCode = (int)HttpStatusCode.NotFound;
+                        title = "Not Found";
+                        message = (exception as Exception).Message;
+                        break;
+                    }
+                case ConflictException ce:
+                    statusCode = (int)HttpStatusCode.Conflict;
+                    title = "Conflict";
+                    message = ce.Message;
                     break;
 
-                default:
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    response.Title = "Internal Server Error";
-                    response.Status = (int)HttpStatusCode.InternalServerError;
-                    response.Detail = "An error occurred while processing your request.";
+                case ArgumentException ae:
+                    statusCode = (int)HttpStatusCode.BadRequest;
+                    title = "Bad Request";
+                    message = ae.Message;
                     break;
             }
 
-            await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+            context.Response.StatusCode = statusCode;
+
+            var envelope = new
+            {
+                success = false,
+                status = statusCode,
+                title,
+                message,
+                errors
+            };
+
+            await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(envelope));
         }
     }
 }

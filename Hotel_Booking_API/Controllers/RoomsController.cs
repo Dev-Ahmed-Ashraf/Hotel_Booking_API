@@ -209,22 +209,22 @@ namespace Hotel_Booking_API.Controllers
         {
             var command = new CreateRoomCommand { CreateRoomDto = createRoomDto };
             var result = await _mediator.Send(command);
-            if (!result.Success)
-            {
-                var msg = result.Message?.ToLower() ?? "";
+            //if (!result.Success)
+            //{
+            //    var msg = result.Message?.ToLower() ?? "";
 
-                if (msg.Contains("not found"))
-                    return NotFound(result);
+            //    if (msg.Contains("not found"))
+            //        return NotFound(result);
 
-                if (msg.Contains("already exists"))
-                    return Conflict(result);
+            //    if (msg.Contains("already exists"))
+            //        return Conflict(result);
 
-                return BadRequest(result);
-            }
+            //    return BadRequest(result);
+            //}
 
             // تأكد إن عندك Data و Id قبل ما تعمل CreatedAtAction
-            if (result.Data == null || result.Data.Id <= 0)
-                return StatusCode(500, ApiResponse<RoomDto>.ErrorResponse("Invalid room data returned."));
+            //if (result.Data == null || result.Data.Id <= 0)
+            //    return StatusCode(500, ApiResponse<RoomDto>.ErrorResponse("Invalid room data returned."));
 
             return CreatedAtAction(
                 nameof(GetRoomById),

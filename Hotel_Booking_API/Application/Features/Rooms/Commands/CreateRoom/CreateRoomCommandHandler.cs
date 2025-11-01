@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Interfaces;
@@ -41,7 +42,7 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Commands.CreateRoom
                 if (hotel == null || hotel.IsDeleted)
                 {
                     Log.Warning("Hotel not found or deleted: {HotelId}", request.CreateRoomDto.HotelId);
-                    return ApiResponse<RoomDto>.ErrorResponse($"Hotel with ID {request.CreateRoomDto.HotelId} not found or is deleted.");
+                    throw new NotFoundException(nameof(Hotel), request.CreateRoomDto.HotelId);
                 }
 
             // Check if a room with the same number already exists in this hotel (case-insensitive)
@@ -53,12 +54,11 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Commands.CreateRoom
                 if (existingRoom != null)
                 {
                     Log.Warning("Duplicate room found: {RoomNumber} in hotel {HotelId}", request.CreateRoomDto.RoomNumber, request.CreateRoomDto.HotelId);
-                    return ApiResponse<RoomDto>.ErrorResponse($"A room with number '{request.CreateRoomDto.RoomNumber}' already exists in this hotel.");
+                    throw new ConflictException($"A room with number '{request.CreateRoomDto.RoomNumber}' already exists in this hotel.");
                 }
 
             // Map DTO to entity and set default values
             var room = _mapper.Map<Room>(request.CreateRoomDto);
-            room.IsAvailable = true; // New rooms are available by default
             room.CreatedAt = DateTime.UtcNow;
             room.UpdatedAt = DateTime.UtcNow;
 

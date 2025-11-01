@@ -1,5 +1,6 @@
 using AutoMapper;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Enums;
@@ -45,17 +46,17 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
                     b => b.Room!.Hotel
                 );
 
-                if (booking == null || booking.IsDeleted)
+                if (booking is null || booking.IsDeleted)
                 {
                     Log.Warning("Booking not found or deleted: {BookingId}", request.Id);
-                    return ApiResponse<BookingDto>.ErrorResponse($"Booking with ID {request.Id} not found or is deleted.");
+                    throw new NotFoundException("Booking", request.Id);
                 }
 
                 // Block updates if booking is cancelled or completed
                 if (booking.Status == BookingStatus.Cancelled || booking.Status == BookingStatus.Completed)
                 {
                     Log.Warning("Cannot update cancelled or completed booking: {BookingId}, Status: {Status}", request.Id, booking.Status);
-                    return ApiResponse<BookingDto>.ErrorResponse($"Cannot update booking with status '{booking.Status}'.");
+                    throw new BadRequestException($"Cannot update booking with status '{booking.Status}'.");
                 }
 
                 var dto = request.UpdateBookingDto;
@@ -80,11 +81,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
                     }
                 }
 
-                if (dto.Status.HasValue)
-                {
-                    booking.Status = dto.Status.Value;
-                }
-
                 // If dates changed, validate and recalculate price
                 if (datesChanged)
                 {
@@ -93,7 +89,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
                     {
                         Log.Warning("Invalid date range in update: CheckIn {CheckInDate} >= CheckOut {CheckOutDate}", 
                             booking.CheckInDate, booking.CheckOutDate);
-                        return ApiResponse<BookingDto>.ErrorResponse("Check-out date must be after check-in date.");
+                        throw new BadRequestException("Check-out date must be after check-in date.");
                     }
 
                     // Check for conflicting bookings (excluding current booking)
@@ -110,7 +106,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
                     {
                         Log.Warning("Room has conflicting bookings for new dates: {RoomId}, BookingId: {BookingId}", 
                             booking.RoomId, request.Id);
-                        return ApiResponse<BookingDto>.ErrorResponse("Room is not available for the new date range.");
+                        throw new ConflictException("Room is not available for the new date range.");
                     }
 
                     // Recalculate total price
@@ -127,9 +123,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
 
                 // Map entity back to DTO for response
                 var bookingDto = _mapper.Map<BookingDto>(booking);
-                bookingDto.UserName = $"{booking.User!.FirstName} {booking.User.LastName}";
-                bookingDto.RoomNumber = booking.Room!.RoomNumber;
-                bookingDto.HotelName = booking.Room.Hotel!.Name;
+
 
                 Log.Information("Booking updated successfully with ID {BookingId}", booking.Id);
                 Log.Information("Completed {HandlerName} successfully", nameof(UpdateBookingCommandHandler));

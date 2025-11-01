@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
@@ -33,12 +34,12 @@ namespace Hotel_Booking.Application.Features.Hotels.Queries.GetHotelById
                 if (hotel == null)
                 {
                     Log.Warning("Hotel not found: {HotelId}", request.Id);
-                    return ApiResponse<HotelDto>.ErrorResponse("Hotel not found.");
+                    throw new NotFoundException("Hotel", request.Id);
                 }
 
                 var hotelDto = _mapper.Map<HotelDto>(hotel);
                 hotelDto.TotalRooms = hotel.Rooms.Count;
-                hotelDto.AvailableRooms = hotel.Rooms.Count(r => r.IsAvailable);
+                //hotelDto.AvailableRooms = hotel.Rooms.Count(r => r.IsAvailable);
 
                 Log.Information("Hotel retrieved successfully with ID {HotelId} and name {HotelName}", hotel.Id, hotel.Name);
                 Log.Information("Completed {HandlerName} successfully", nameof(GetHotelByIdQueryHandler));

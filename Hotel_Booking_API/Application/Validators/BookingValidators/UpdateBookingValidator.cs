@@ -36,11 +36,6 @@ namespace Hotel_Booking_API.Application.Validators.BookingValidators
                     .LessThanOrEqualTo(x => x.UpdateBookingDto!.CheckInDate!.Value.AddDays(30))
                     .WithMessage("Booking duration cannot exceed 30 days")
                     .When(x => x.UpdateBookingDto!.CheckInDate.HasValue && x.UpdateBookingDto!.CheckOutDate.HasValue);
-
-                // Validate status if provided
-                RuleFor(x => x.UpdateBookingDto!.Status)
-                    .IsInEnum().WithMessage("Invalid booking status")
-                    .When(x => x.UpdateBookingDto!.Status.HasValue);
             });
         }
     }

@@ -60,7 +60,8 @@ namespace Hotel_Booking_API.Application.Mappings
             CreateMap<Booking, BookingDto>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
                 .ForMember(dest => dest.RoomNumber, opt => opt.MapFrom(src => src.Room.RoomNumber))
-                .ForMember(dest => dest.HotelName, opt => opt.MapFrom(src => src.Room.Hotel.Name));
+                .ForMember(dest => dest.HotelName, opt => opt.MapFrom(src => src.Room.Hotel.Name))
+                .ForMember(dest => dest.Payment, opt => opt.MapFrom(src => src.Payment));
 
             CreateMap<CreateBookingDto, Booking>()
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())

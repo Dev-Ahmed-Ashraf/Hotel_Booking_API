@@ -20,6 +20,8 @@ using Hotel_Booking_API.Application.Mappings;         // AutoMapper profiles
 using Hotel_Booking_API.Application.Common.Behaviors;  // MediatR pipeline behaviors
 using Hotel_Booking_API.Middleware;                   // Custom middleware
 using Hotel_Booking.Application.Validators.AuthValidators;
+using Hotel_Booking.Domain.Interfaces;
+using Hotel_Booking.Infrastructure.Repositories;
 
 namespace Hotel_Booking_API
 {
@@ -83,6 +85,7 @@ namespace Hotel_Booking_API
 
             // Register generic repository and unit of work patterns
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IRoomRepository, RoomRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Register JWT service for authentication
@@ -157,7 +160,7 @@ namespace Hotel_Booking_API
                         var result = System.Text.Json.JsonSerializer.Serialize(new
                         {
                             success = false,
-                            message = "You must be an Admin to perform this action."
+                            message = "Authentication is required. Please login to continue."
                         });
 
                         return context.Response.WriteAsync(result);
@@ -167,10 +170,27 @@ namespace Hotel_Booking_API
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
                         context.Response.ContentType = "application/json";
 
+                        var path = context.Request.Path.Value?.ToLower();
+                        string message;
+
+                        // تخصيص الرسائل حسب الـ endpoint
+                        if (path.Contains("/bookings"))
+                        {
+                            message = "Only Admins and Customers can perform this action.";
+                        }
+                        else if (path.Contains("/hotels"))
+                        {
+                            message = "Only Admins can manage hotels.";
+                        }
+                        else
+                        {
+                            message = "You do not have permission to perform this action.";
+                        }
+
                         var result = System.Text.Json.JsonSerializer.Serialize(new
                         {
                             success = false,
-                            message = "Access denied. Admin privileges required."
+                            message
                         });
 
                         return context.Response.WriteAsync(result);

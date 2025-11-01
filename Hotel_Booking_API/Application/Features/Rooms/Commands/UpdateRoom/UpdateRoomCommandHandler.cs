@@ -1,6 +1,7 @@
 using AutoMapper;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.DTOs;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
 using Serilog;
@@ -44,7 +45,7 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Commands.UpdateRoom
                 if (room == null || room.IsDeleted)
                 {
                     Log.Warning("Room not found or deleted: {RoomId}", request.Id);
-                    return ApiResponse<RoomDto>.ErrorResponse($"Room with ID {request.Id} not found or is deleted.");
+                    throw new NotFoundException("Room", request.Id);
                 }
 
             var dto = request.UpdateRoomDto;
@@ -62,7 +63,7 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Commands.UpdateRoom
                 if (existingRoom != null)
                 {
                     Log.Warning("Duplicate room number found: {RoomNumber} in hotel {HotelId}", dto.RoomNumber, room.HotelId);
-                    return ApiResponse<RoomDto>.ErrorResponse($"A room with number '{dto.RoomNumber}' already exists in this hotel.");
+                    throw new ConflictException($"A room with number '{dto.RoomNumber}' already exists in this hotel.");
                 }
             }
 
@@ -83,8 +84,8 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Commands.UpdateRoom
                 room.Description = dto.Description;
 
             // Update availability if provided
-            if (dto.IsAvailable.HasValue && dto.IsAvailable.Value != room.IsAvailable)
-                room.IsAvailable = dto.IsAvailable.Value;
+            //if (dto.IsAvailable.HasValue && dto.IsAvailable.Value != room.IsAvailable)
+            //    room.IsAvailable = dto.IsAvailable.Value;
 
             // Update timestamp
             room.UpdatedAt = DateTime.UtcNow;

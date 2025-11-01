@@ -1,4 +1,5 @@
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Enums;
 using Hotel_Booking_API.Domain.Interfaces;
@@ -42,13 +43,13 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.DeleteBooking
                 if (booking == null)
                 {
                     Log.Warning("Booking not found: {BookingId}", request.Id);
-                    return ApiResponse<string>.ErrorResponse($"Booking with ID {request.Id} not found.");
+                    throw new NotFoundException("Booking", request.Id);
                 }
 
                 if (booking.IsDeleted)
                 {
                     Log.Warning("Booking already deleted: {BookingId}", request.Id);
-                    return ApiResponse<string>.ErrorResponse($"Booking with ID {request.Id} is already deleted.");
+                    throw new BadRequestException($"Booking with ID {request.Id} is already deleted.");
                 }
 
                 // Check if booking has active status (not cancelled or completed)
@@ -57,8 +58,8 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.DeleteBooking
                 // If not forcing deletion and booking is active, restore room availability
                 if (!request.ForceDelete && hasActiveStatus && booking.Room != null)
                 {
-                    booking.Room.IsAvailable = true;
-                    await _unitOfWork.Rooms.UpdateAsync(booking.Room);
+                    Log.Warning("Cannot delete active booking without force option: {BookingId}", request.Id);
+                    throw new BadRequestException("Cannot delete an active booking unless force delete is enabled.");
                 }
 
                 // Perform deletion based on request

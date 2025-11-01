@@ -115,7 +115,7 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Queries.GetAvailableRooms
                 .Include(r => r.Hotel)
                 .Include(r => r.Bookings)
                 .AsNoTracking()
-                .Where(r => !r.IsDeleted && r.IsAvailable);
+                .Where(r => !r.IsDeleted);
 
             // Apply hotel filter if specified
             if (request.HotelId.HasValue)
@@ -165,7 +165,7 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Queries.GetAvailableRooms
                 RoomNumber = room.RoomNumber,
                 Type = room.Type,
                 Price = room.Price,
-                IsAvailable = room.IsAvailable,
+                //IsAvailable = room.IsAvailable,
                 Capacity = room.Capacity,
                 Description = room.Description,
                 CreatedAt = room.CreatedAt

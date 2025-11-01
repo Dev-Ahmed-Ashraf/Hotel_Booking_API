@@ -1,4 +1,5 @@
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
 using Serilog;
@@ -40,13 +41,13 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Commands.DeleteRoom
                 if (room == null)
                 {
                     Log.Warning("Room not found: {RoomId}", request.Id);
-                    return ApiResponse<string>.ErrorResponse($"Room with ID {request.Id} not found.");
+                    throw new NotFoundException("Room", request.Id);
                 }
 
                 if (room.IsDeleted)
                 {
                     Log.Warning("Room already deleted: {RoomId}", request.Id);
-                    return ApiResponse<string>.ErrorResponse($"Room with ID {request.Id} is already deleted.");
+                    throw new BadRequestException($"Room with ID {request.Id} is already deleted.");
                 }
 
             // Check for active bookings if not forcing deletion
@@ -62,9 +63,7 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Commands.DeleteRoom
                 {
                     var bookingIds = string.Join(", ", activeBookings.Select(b => b.Id));
                     Log.Warning("Cannot delete room with active bookings: {RoomId}, RoomNumber: {RoomNumber}, BookingIds: {BookingIds}", request.Id, room.RoomNumber, bookingIds);
-                    return ApiResponse<string>.ErrorResponse(
-                        $"Cannot delete room '{room.RoomNumber}' because it has active bookings (IDs: {bookingIds}). " +
-                        "Use ForceDelete=true to override this check, but this may cause data integrity issues.");
+                    throw new BadRequestException($"Cannot delete room '{room.RoomNumber}' because it has active bookings (IDs: {bookingIds}). Use ForceDelete=true to override this check, but this may cause data integrity issues.");
                 }
             }
 

@@ -27,9 +27,9 @@ namespace Hotel_Booking_API.Infrastructure.Data.Configurations
             builder.Property(r => r.Description)
                 .HasMaxLength(500);
                 
-            builder.Property(r => r.IsAvailable)
-                .IsRequired()
-                .HasDefaultValue(true);
+            //builder.Property(r => r.IsAvailable)
+            //    .IsRequired()
+            //    .HasDefaultValue(true);
 
             // Foreign key relationship
             builder.HasOne(r => r.Hotel)

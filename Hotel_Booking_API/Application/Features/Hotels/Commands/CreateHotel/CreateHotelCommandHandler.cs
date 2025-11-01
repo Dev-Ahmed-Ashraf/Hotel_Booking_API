@@ -2,6 +2,7 @@ using MediatR;
 using AutoMapper;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Interfaces;
 using Serilog;
@@ -42,7 +43,7 @@ namespace Hotel_Booking_API.Application.Features.Hotels.Commands.CreateHotel
                 if (existingHotel != null)
                 {
                     Log.Warning("Hotel name already exists: {HotelName}", request.CreateHotelDto.Name);
-                    return ApiResponse<HotelDto>.ErrorResponse($"A hotel with the name '{request.CreateHotelDto.Name}' already exists.");
+                    throw new ConflictException($"A hotel with the name '{request.CreateHotelDto.Name}' already exists.");
                 }
 
                 // Map DTO to entity and set default values

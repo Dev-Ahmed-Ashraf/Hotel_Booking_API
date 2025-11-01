@@ -1,5 +1,6 @@
 using AutoMapper;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Enums;
@@ -45,10 +46,10 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.ChangeBooking
                     b => b.Room!.Hotel
                 );
 
-                if (booking == null || booking.IsDeleted)
+                if (booking is null || booking.IsDeleted)
                 {
                     Log.Warning("Booking not found or deleted: {BookingId}", request.Id);
-                    return ApiResponse<BookingDto>.ErrorResponse($"Booking with ID {request.Id} not found or is deleted.");
+                    throw new NotFoundException("Booking", request.Id);
                 }
 
                 var newStatus = request.ChangeBookingStatusDto.Status;
@@ -59,26 +60,12 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.ChangeBooking
                 {
                     Log.Warning("Invalid status transition: {CurrentStatus} to {NewStatus} for booking {BookingId}", 
                         currentStatus, newStatus, request.Id);
-                    return ApiResponse<BookingDto>.ErrorResponse($"Invalid status transition from '{currentStatus}' to '{newStatus}'.");
+                    throw new BadRequestException($"Invalid status transition from '{currentStatus}' to '{newStatus}'.");
                 }
 
                 // Update booking status
                 booking.Status = newStatus;
                 booking.UpdatedAt = DateTime.UtcNow;
-
-                // Handle special status changes
-                if (newStatus == BookingStatus.Cancelled && booking.Room != null)
-                {
-                    // Restore room availability when booking is cancelled
-                    booking.Room.IsAvailable = true;
-                    await _unitOfWork.Rooms.UpdateAsync(booking.Room);
-                }
-                else if (newStatus == BookingStatus.Completed && booking.Room != null)
-                {
-                    // Restore room availability when booking is completed
-                    booking.Room.IsAvailable = true;
-                    await _unitOfWork.Rooms.UpdateAsync(booking.Room);
-                }
 
                 // Save changes
                 await _unitOfWork.Bookings.UpdateAsync(booking);
@@ -86,9 +73,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.ChangeBooking
 
                 // Map entity back to DTO for response
                 var bookingDto = _mapper.Map<BookingDto>(booking);
-                bookingDto.UserName = $"{booking.User!.FirstName} {booking.User.LastName}";
-                bookingDto.RoomNumber = booking.Room!.RoomNumber;
-                bookingDto.HotelName = booking.Room.Hotel!.Name;
+
 
                 Log.Information("Booking status changed successfully from {CurrentStatus} to {NewStatus} for booking {BookingId}", 
                     currentStatus, newStatus, booking.Id);

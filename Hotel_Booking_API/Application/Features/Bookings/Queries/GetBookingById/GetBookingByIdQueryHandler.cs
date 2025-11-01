@@ -1,5 +1,6 @@
 using AutoMapper;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
@@ -45,17 +46,14 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingById
                 );
 
                 // Check if booking exists and is not deleted
-                if (booking == null || booking.IsDeleted)
+                if (booking is null || booking.IsDeleted)
                 {
                     Log.Warning("Booking not found or deleted: {BookingId}", request.Id);
-                    return ApiResponse<BookingDto>.ErrorResponse("Booking not found.");
+                    throw new NotFoundException("Booking", request.Id);
                 }
 
                 // Map entity to DTO for response
                 var bookingDto = _mapper.Map<BookingDto>(booking);
-                bookingDto.UserName = $"{booking.User!.FirstName} {booking.User.LastName}";
-                bookingDto.RoomNumber = booking.Room!.RoomNumber;
-                bookingDto.HotelName = booking.Room.Hotel!.Name;
 
                 Log.Information("Booking retrieved successfully with ID {BookingId} for user {UserId}", booking.Id, booking.UserId);
                 Log.Information("Completed {HandlerName} successfully", nameof(GetBookingByIdQueryHandler));

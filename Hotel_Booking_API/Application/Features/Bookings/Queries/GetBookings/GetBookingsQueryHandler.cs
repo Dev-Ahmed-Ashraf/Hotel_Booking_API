@@ -1,4 +1,5 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Entities;
@@ -41,8 +42,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookings
                 IQueryable<Booking> query = _context.Bookings
                     .IgnoreQueryFilters()
                     .Include(b => b.User)
-                    .Include(b => b.Room)
-                    .Include(b => b.Room!.Hotel)
+                    .Include(b => b.Room).ThenInclude(r => r.Hotel)
                     .Include(b => b.Payment)
                     .AsNoTracking()
                     .AsQueryable();
@@ -84,29 +84,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookings
                     .OrderByDescending(b => b.CreatedAt)
                     .Skip((request.Pagination.PageNumber - 1) * request.Pagination.PageSize)
                     .Take(request.Pagination.PageSize)
-                    .Select(b => new BookingDto
-                    {
-                        Id = b.Id,
-                        UserId = b.UserId,
-                        UserName = $"{b.User!.FirstName} {b.User.LastName}",
-                        RoomId = b.RoomId,
-                        RoomNumber = b.Room!.RoomNumber,
-                        HotelName = b.Room.Hotel!.Name,
-                        CheckInDate = b.CheckInDate,
-                        CheckOutDate = b.CheckOutDate,
-                        TotalPrice = b.TotalPrice,
-                        Status = b.Status,
-                        CreatedAt = b.CreatedAt,
-                        Payment = b.Payment != null ? new PaymentDto
-                        {
-                            Id = b.Payment.Id,
-                            Amount = b.Payment.Amount,
-                            PaymentMethod = b.Payment.PaymentMethod,
-                            Status = b.Payment.Status,
-                            PaidAt = b.Payment.PaidAt,
-                            CreatedAt = b.Payment.CreatedAt
-                        } : null
-                    })
+                    .ProjectTo<BookingDto>(_mapper.ConfigurationProvider)
                     .ToListAsync(cancellationToken);
 
                 // Create paginated result
@@ -117,8 +95,8 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookings
                     totalCount
                 );
 
-                Log.Information("Bookings retrieved successfully: {TotalCount} bookings found for page {PageNumber}", totalCount, request.Pagination.PageNumber);
-                Log.Information("Completed {HandlerName} successfully", nameof(GetBookingsQueryHandler));
+                Log.Information("Bookings retrieved successfully: {TotalCount} bookings found for page {PageNumber}",
+                totalCount, request.Pagination.PageNumber);
 
                 return ApiResponse<PagedList<BookingDto>>.SuccessResponse(pagedList, "Bookings retrieved successfully");
             }

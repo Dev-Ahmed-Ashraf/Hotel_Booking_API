@@ -1,3 +1,4 @@
+using Hotel_Booking.Domain.Interfaces;
 using Hotel_Booking_API.Domain.Entities;
 
 namespace Hotel_Booking_API.Domain.Interfaces
@@ -11,6 +12,8 @@ namespace Hotel_Booking_API.Domain.Interfaces
         IRepository<Review> Reviews { get; }
         IRepository<Payment> Payments { get; }
         
+        IRoomRepository RoomRepository { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();

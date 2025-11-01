@@ -1,5 +1,7 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Infrastructure.Data;
@@ -39,8 +41,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByU
                 // Start with base query for user's bookings
                 IQueryable<Booking> query = _context.Bookings
                     .Include(b => b.User)
-                    .Include(b => b.Room)
-                    .Include(b => b.Room!.Hotel)
+                    .Include(b => b.Room).ThenInclude(b => b.Hotel)
                     .Include(b => b.Payment)
                     .AsNoTracking()
                     .Where(b => b.UserId == request.UserId && !b.IsDeleted);
@@ -48,34 +49,18 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByU
                 // Get total count for pagination
                 var totalCount = await query.CountAsync(cancellationToken);
 
+                if (totalCount == 0)
+                {
+                    Log.Warning("User {UserId} has no active bookings.", request.UserId);
+                    throw new NotFoundException($"No active bookings found for user with ID {request.UserId}.");
+                }
+
                 // Apply pagination and ordering
                 var bookings = await query
                     .OrderByDescending(b => b.CreatedAt)
                     .Skip((request.Pagination.PageNumber - 1) * request.Pagination.PageSize)
                     .Take(request.Pagination.PageSize)
-                    .Select(b => new BookingDto
-                    {
-                        Id = b.Id,
-                        UserId = b.UserId,
-                        UserName = $"{b.User!.FirstName} {b.User.LastName}",
-                        RoomId = b.RoomId,
-                        RoomNumber = b.Room!.RoomNumber,
-                        HotelName = b.Room.Hotel!.Name,
-                        CheckInDate = b.CheckInDate,
-                        CheckOutDate = b.CheckOutDate,
-                        TotalPrice = b.TotalPrice,
-                        Status = b.Status,
-                        CreatedAt = b.CreatedAt,
-                        Payment = b.Payment != null ? new PaymentDto
-                        {
-                            Id = b.Payment.Id,
-                            Amount = b.Payment.Amount,
-                            PaymentMethod = b.Payment.PaymentMethod,
-                            Status = b.Payment.Status,
-                            PaidAt = b.Payment.PaidAt,
-                            CreatedAt = b.Payment.CreatedAt
-                        } : null
-                    })
+                    .ProjectTo<BookingDto>(_mapper.ConfigurationProvider)
                     .ToListAsync(cancellationToken);
 
                 // Create paginated result

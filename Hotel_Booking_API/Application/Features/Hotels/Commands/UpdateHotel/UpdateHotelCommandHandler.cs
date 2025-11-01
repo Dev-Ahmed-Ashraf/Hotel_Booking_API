@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Hotel_Booking.Application.Features.Hotels.Commands.UpdateHotel;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
@@ -41,7 +42,7 @@ namespace Hotel_Booking_API.Application.Features.Hotels.Commands.UpdateHotel
                 if (hotel == null || hotel.IsDeleted)
                 {
                     Log.Warning("Hotel not found or deleted: {HotelId}", request.Id);
-                    return ApiResponse<HotelDto>.ErrorResponse($"Hotel with ID {request.Id} not found or is deleted.");
+                    throw new NotFoundException("Hotel", request.Id);
                 }
 
                 var dto = request.UpdateHotelDto;
@@ -56,7 +57,7 @@ namespace Hotel_Booking_API.Application.Features.Hotels.Commands.UpdateHotel
                     if (existingHotel != null && existingHotel.Id != hotel.Id)
                     {
                         Log.Warning("Hotel name already exists: {HotelName}", dto.Name);
-                        return ApiResponse<HotelDto>.ErrorResponse($"A hotel with the name '{dto.Name}' already exists.");
+                        throw new ConflictException($"A hotel with the name '{dto.Name}' already exists.");
                     }
                 }
 

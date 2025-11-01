@@ -1,3 +1,5 @@
+using Hotel_Booking.Domain.Interfaces;
+using Hotel_Booking.Infrastructure.Repositories;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Interfaces;
 using Hotel_Booking_API.Infrastructure.Data;
@@ -14,9 +16,12 @@ namespace Hotel_Booking_API.Infrastructure.Repositories
         private IRepository<Review>? _reviews;
         private IRepository<Payment>? _payments;
 
+        private IRoomRepository RoomRepository { get; }
+
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
+            RoomRepository = new RoomRepository(_context);
         }
 
         public IRepository<User> Users => _users ??= new Repository<User>(_context);
@@ -25,6 +30,8 @@ namespace Hotel_Booking_API.Infrastructure.Repositories
         public IRepository<Booking> Bookings => _bookings ??= new Repository<Booking>(_context);
         public IRepository<Review> Reviews => _reviews ??= new Repository<Review>(_context);
         public IRepository<Payment> Payments => _payments ??= new Repository<Payment>(_context);
+
+        IRoomRepository IUnitOfWork.RoomRepository => RoomRepository;
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

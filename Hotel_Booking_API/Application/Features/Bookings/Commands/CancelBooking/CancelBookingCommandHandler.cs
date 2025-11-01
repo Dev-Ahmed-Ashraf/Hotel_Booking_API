@@ -1,4 +1,5 @@
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Enums;
@@ -43,38 +44,31 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CancelBooking
                 if (booking == null)
                 {
                     Log.Warning("Booking not found: {BookingId}", request.Id);
-                    return ApiResponse<string>.ErrorResponse($"Booking with ID {request.Id} not found.");
+                    throw new NotFoundException("Booking", request.Id);
                 }
 
                 if (booking.IsDeleted)
                 {
                     Log.Warning("Booking already deleted: {BookingId}", request.Id);
-                    return ApiResponse<string>.ErrorResponse($"Booking with ID {request.Id} is already deleted.");
+                    throw new BadRequestException($"Booking with ID {request.Id} is already deleted.");
                 }
 
                 // Block cancellation if already cancelled or completed
                 if (booking.Status == BookingStatus.Cancelled)
                 {
                     Log.Warning("Booking already cancelled: {BookingId}", request.Id);
-                    return ApiResponse<string>.ErrorResponse($"Booking with ID {request.Id} is already cancelled.");
+                    throw new BadRequestException($"Booking with ID {request.Id} is already cancelled.");
                 }
 
                 if (booking.Status == BookingStatus.Completed)
                 {
                     Log.Warning("Cannot cancel completed booking: {BookingId}", request.Id);
-                    return ApiResponse<string>.ErrorResponse($"Cannot cancel booking with status '{BookingStatus.Completed}'.");
+                    throw new BadRequestException($"Cannot cancel booking with status '{BookingStatus.Completed}'.");
                 }
 
                 // Update booking status to Cancelled
                 booking.Status = BookingStatus.Cancelled;
                 booking.UpdatedAt = DateTime.UtcNow;
-
-                // Restore room availability
-                if (booking.Room != null)
-                {
-                    booking.Room.IsAvailable = true;
-                    await _unitOfWork.Rooms.UpdateAsync(booking.Room);
-                }
 
                 // Save changes
                 await _unitOfWork.Bookings.UpdateAsync(booking);

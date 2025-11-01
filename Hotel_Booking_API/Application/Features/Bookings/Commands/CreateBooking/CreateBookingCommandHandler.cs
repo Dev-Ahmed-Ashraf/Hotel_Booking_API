@@ -1,5 +1,6 @@
 using AutoMapper;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Enums;
@@ -38,10 +39,10 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking
             {
                 // Validate that the user exists
                 var user = await _unitOfWork.Users.GetByIdAsync(request.UserId, cancellationToken);
-                if (user == null || user.IsDeleted)
+                if (user is null || user.IsDeleted)
                 {
                     Log.Warning("User not found or deleted: {UserId}", request.UserId);
-                    return ApiResponse<BookingDto>.ErrorResponse($"User with ID {request.UserId} not found or is deleted.");
+                    throw new NotFoundException("User", request.UserId);
                 }
 
                 // Validate that the room exists and is not deleted
@@ -50,33 +51,42 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking
                     cancellationToken,
                     r => r.Hotel
                 );
-                if (room == null || room.IsDeleted)
+
+                if (room is null || room.IsDeleted)
                 {
                     Log.Warning("Room not found or deleted: {RoomId}", request.CreateBookingDto.RoomId);
-                    return ApiResponse<BookingDto>.ErrorResponse($"Room with ID {request.CreateBookingDto.RoomId} not found or is deleted.");
+                    throw new NotFoundException("Room", request.CreateBookingDto.RoomId);
                 }
 
-                // Check if room is available
-                if (!room.IsAvailable)
+                // Check Room Availability (excluding Cancelled & Completed)
+                var isAvailable = await _unitOfWork.RoomRepository.IsRoomAvailableAsync(
+                    room.Id,
+                    request.CreateBookingDto.CheckInDate,
+                    request.CreateBookingDto.CheckOutDate,
+                    cancellationToken
+                );
+
+                if (!isAvailable)
                 {
-                    Log.Warning("Room not available: {RoomId}", request.CreateBookingDto.RoomId);
-                    return ApiResponse<BookingDto>.ErrorResponse($"Room {room.RoomNumber} is not available.");
+                    Log.Warning("Room not available for booking: {RoomId}", room.Id);
+                    throw new ConflictException($"Room {room.RoomNumber} is not available for the selected dates.");
                 }
 
-                // Check for conflicting bookings
+                // Double-check overlapping active bookings
                 var conflictingBookings = await _unitOfWork.Bookings.FindAsync(b =>
-                    b.RoomId == request.CreateBookingDto.RoomId &&
+                    b.RoomId == room.Id &&
                     !b.IsDeleted &&
                     b.Status != BookingStatus.Cancelled &&
+                    b.Status != BookingStatus.Completed &&
                     b.CheckInDate < request.CreateBookingDto.CheckOutDate &&
                     b.CheckOutDate > request.CreateBookingDto.CheckInDate
                 );
 
                 if (conflictingBookings.Any())
                 {
-                    Log.Warning("Room has conflicting bookings: {RoomId}, CheckIn: {CheckInDate}, CheckOut: {CheckOutDate}", 
-                        request.CreateBookingDto.RoomId, request.CreateBookingDto.CheckInDate, request.CreateBookingDto.CheckOutDate);
-                    return ApiResponse<BookingDto>.ErrorResponse("Room is not available for the specified date range.");
+                    Log.Warning("Room {RoomId} has conflicting bookings between {Start} and {End}",
+                    room.Id, request.CreateBookingDto.CheckInDate, request.CreateBookingDto.CheckOutDate);
+                    throw new ConflictException("Room is not available for the specified date range.");
                 }
 
                 // Calculate total price
@@ -90,11 +100,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking
                 booking.Status = BookingStatus.Pending;
                 booking.CreatedAt = DateTime.UtcNow;
                 booking.UpdatedAt = DateTime.UtcNow;
-                booking.IsDeleted = false;
-
-                // Set room as unavailable
-                room.IsAvailable = false;
-                await _unitOfWork.Rooms.UpdateAsync(room);
 
                 // Add booking to repository and save changes
                 await _unitOfWork.Bookings.AddAsync(booking, cancellationToken);

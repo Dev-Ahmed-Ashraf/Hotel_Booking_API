@@ -8,7 +8,6 @@ namespace Hotel_Booking_API.Domain.Entities
         public string RoomNumber { get; set; } = string.Empty;
         public RoomType Type { get; set; }
         public decimal Price { get; set; }
-        public bool IsAvailable { get; set; } = true;
         public int Capacity { get; set; }
         public string Description { get; set; } = string.Empty;
         

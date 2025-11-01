@@ -80,7 +80,7 @@ namespace Hotel_Booking_API.Application.Features.Hotels.Queries.GetHotels
                     Rating = h.Rating,
                     CreatedAt = h.CreatedAt,
                     TotalRooms = h.Rooms.Count(r => !r.IsDeleted),
-                    AvailableRooms = h.Rooms.Count(r => !r.IsDeleted && r.IsAvailable),
+                    //AvailableRooms = h.Rooms.Count(r => !r.IsDeleted && r.IsAvailable),
                     IsDeleted = h.IsDeleted
                 })
                 .ToListAsync(cancellationToken);
