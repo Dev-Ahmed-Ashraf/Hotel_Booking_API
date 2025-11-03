@@ -117,9 +117,10 @@ The application automatically creates the database and seeds initial data on fir
 - `PUT /api/reviews/{id}` - Update review
 - `DELETE /api/reviews/{id}` - Delete review
 
-### Payments
-- `POST /api/payments/process` - Process payment for booking
-- `GET /api/payments/booking/{bookingId}` - Get payment by booking
+### Payments (Stripe Test Mode)
+- `POST /api/payments/intents` - Create Stripe PaymentIntent for a booking
+- `GET /api/payments/{id}` - Get payment by id
+- `GET /api/bookings/{bookingId}/payment` - Get payment by booking
 
 ## 🔐 Authentication
 
@@ -187,6 +188,30 @@ Authorization: Bearer <your-jwt-token>
   }
 }
 ```
+
+### Stripe Settings
+```json
+{
+  "Stripe": {
+    "ApiKey": "sk_test_xxx",
+    "WebhookSecret": "whsec_xxx",
+    "PublishableKey": "pk_test_xxx",
+    "Currency": "usd"
+  }
+}
+```
+
+#### Stripe Test Cards
+- Number: `4242 4242 4242 4242`
+- Expiry: any future date
+- CVC: any 3 digits
+
+#### Webhook Testing (Stripe CLI)
+```bash
+stripe login
+stripe listen --forward-to https://localhost:7062/api/stripe/webhook
+```
+When a PaymentIntent is confirmed (test mode), Stripe sends `payment_intent.succeeded` which updates local `Payment` to Completed and sets `Booking` to Confirmed.
 
 ## 🧪 Testing the API
 

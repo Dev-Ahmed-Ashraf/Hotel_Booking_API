@@ -22,6 +22,7 @@ using Hotel_Booking_API.Middleware;                   // Custom middleware
 using Hotel_Booking.Application.Validators.AuthValidators;
 using Hotel_Booking.Domain.Interfaces;
 using Hotel_Booking.Infrastructure.Repositories;
+using Hotel_Booking_API.Infrastructure.Services;
 
 namespace Hotel_Booking_API
 {
@@ -90,6 +91,14 @@ namespace Hotel_Booking_API
 
             // Register JWT service for authentication
             services.AddScoped<IJwtService, JwtService>();
+
+            // Stripe options and service
+            services.Configure<StripeOptions>(configuration.GetSection("Stripe"));
+            services.AddSingleton<IStripeService, StripeService>();
+
+            // Email service configuration
+            services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
+            services.AddScoped<IEmailService, EmailService>();
 
             // Configure MediatR for CQRS pattern
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));

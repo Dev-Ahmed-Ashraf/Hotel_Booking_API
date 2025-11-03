@@ -1,0 +1,53 @@
+{
+  "info": {
+    "name": "Hotel Booking - Stripe",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create PaymentIntent",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/payments/intents",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payments", "intents"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bookingId\": 1\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Payment by Id",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/payments/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payments", "1"]
+        }
+      }
+    },
+    {
+      "name": "Get Payment by Booking",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/bookings/1/payment",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "bookings", "1", "payment"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "https://localhost:7062" }
+  ]
+}
+
+

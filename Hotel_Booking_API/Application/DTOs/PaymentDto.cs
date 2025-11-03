@@ -20,4 +20,10 @@ namespace Hotel_Booking_API.Application.DTOs
         public PaymentMethod PaymentMethod { get; set; }
         public string TransactionId { get; set; } = string.Empty;
     }
+
+    public class CreatePaymentIntentResponseDto
+    {
+        public string PaymentIntentId { get; set; } = string.Empty;
+        public string ClientSecret { get; set; } = string.Empty;
+    }
 }

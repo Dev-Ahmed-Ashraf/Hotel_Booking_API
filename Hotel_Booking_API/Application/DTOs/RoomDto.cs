@@ -14,7 +14,6 @@ namespace Hotel_Booking_API.Application.DTOs
         public string RoomNumber { get; set; } = string.Empty;
         public RoomType Type { get; set; }
         public decimal Price { get; set; }
-        public bool IsAvailable { get; set; }
         public int Capacity { get; set; }
         public string Description { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
@@ -43,7 +42,6 @@ namespace Hotel_Booking_API.Application.DTOs
         public string RoomNumber { get; set; } = string.Empty;
         public RoomType? Type { get; set; }
         public decimal Price { get; set; }
-        public bool? IsAvailable { get; set; }
         public int Capacity { get; set; }
         public string Description { get; set; } = string.Empty;
     }

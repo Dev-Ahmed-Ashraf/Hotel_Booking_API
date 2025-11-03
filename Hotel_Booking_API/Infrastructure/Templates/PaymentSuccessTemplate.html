@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            margin: -30px -30px 30px -30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .success-badge {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .info-value {
+            color: #333;
+        }
+        .amount-highlight {
+            font-size: 28px;
+            font-weight: bold;
+            color: #28a745;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #667eea;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hotel Booking Confirmation</h1>
+        </div>
+        
+        <div class="success-badge">✓ Payment Successful</div>
+        
+        <p>Dear {{UserName}},</p>
+        
+        <p>We are pleased to confirm that your payment has been processed successfully. Your booking is now confirmed!</p>
+        
+        <div class="amount-highlight">
+            ${{Amount}}
+        </div>
+        
+        <div class="info-box">
+            <div class="info-row">
+                <span class="info-label">Booking ID:</span>
+                <span class="info-value">#{{BookingId}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Transaction ID:</span>
+                <span class="info-value">{{TransactionId}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Payment Date:</span>
+                <span class="info-value">{{PaymentDate}}</span>
+            </div>
+        </div>
+        
+        <p>Your booking details and reservation information have been sent to your registered email address. If you have any questions or need to make changes to your booking, please contact our customer service team.</p>
+        
+        <div style="text-align: center;">
+            <a href="#" class="button">View Booking Details</a>
+        </div>
+        
+        <div class="footer">
+            <p>Thank you for choosing our Hotel Booking Service!</p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
+

@@ -165,7 +165,6 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Queries.GetAvailableRooms
                 RoomNumber = room.RoomNumber,
                 Type = room.Type,
                 Price = room.Price,
-                //IsAvailable = room.IsAvailable,
                 Capacity = room.Capacity,
                 Description = room.Description,
                 CreatedAt = room.CreatedAt
