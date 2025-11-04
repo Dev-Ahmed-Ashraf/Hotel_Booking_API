@@ -36,6 +36,16 @@ This API follows **Clean Architecture** principles with the following layers:
 
 ## 🚀 Getting Started
 
+## 🧾 Postman Collection
+
+To test all API endpoints:
+1. Import the following files into Postman:
+   - `HotelBookingAPI.postman_collection.json`
+   - `HotelBookingAPI.postman_environment.json`
+2. Run the `Login` request to generate an access token.
+3. All secured endpoints will automatically use the saved token.
+4. Optional: use the "Run Collection" feature for end-to-end flow testing.
+
 ### Prerequisites
 
 - .NET 8.0 SDK

@@ -12,6 +12,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using Hotel_Booking_API.Application.Common.Interfaces;
+using Hotel_Booking_API.Infrastructure.Caching;
 
 namespace Hotel_Booking_API.Controllers
 {
@@ -24,10 +26,12 @@ namespace Hotel_Booking_API.Controllers
     public class RoomsController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ICacheInvalidator _cacheInvalidator;
 
-        public RoomsController(IMediator mediator)
+        public RoomsController(IMediator mediator, ICacheInvalidator cacheInvalidator)
         {
             _mediator = mediator;
+            _cacheInvalidator = cacheInvalidator;
         }
 
         /// <summary>
@@ -201,7 +205,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Validation failed — one or more fields are invalid.</response>
         /// <response code="401">Unauthorized — the request requires admin or hotel manager privileges.</response>
         [HttpPost]
-        //[Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
         [ProducesResponseType(typeof(ApiResponse<RoomDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<RoomDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -209,6 +213,7 @@ namespace Hotel_Booking_API.Controllers
         {
             var command = new CreateRoomCommand { CreateRoomDto = createRoomDto };
             var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
             //if (!result.Success)
             //{
             //    var msg = result.Message?.ToLower() ?? "";
@@ -255,7 +260,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="404">Room not found.</response>
         /// <response code="401">Unauthorized — the request requires admin or hotel manager privileges.</response>
         [HttpPatch("{id}")]
-        //[Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
         [ProducesResponseType(typeof(ApiResponse<RoomDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<RoomDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<RoomDto>), StatusCodes.Status404NotFound)]
@@ -269,6 +274,7 @@ namespace Hotel_Booking_API.Controllers
             };
 
             var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
             return Ok(result);
         }
 
@@ -290,7 +296,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Cannot delete room with active bookings.</response>
         /// <response code="401">Unauthorized — the request requires admin privileges.</response>
         [HttpDelete("{id}")]
-        //[Authorize(Roles = nameof(UserRole.Admin))]
+        [Authorize(Roles = nameof(UserRole.Admin))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -305,6 +311,7 @@ namespace Hotel_Booking_API.Controllers
             };
             
             var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
             return NoContent();
         }
 

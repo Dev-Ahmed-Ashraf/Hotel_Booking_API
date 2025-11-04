@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using Hotel_Booking_API.Application.Common.Interfaces;
+using Hotel_Booking_API.Infrastructure.Caching;
 
 namespace Hotel_Booking_API.Controllers
 {
@@ -29,10 +31,12 @@ namespace Hotel_Booking_API.Controllers
     public class BookingsController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ICacheInvalidator _cacheInvalidator;
 
-        public BookingsController(IMediator mediator)
+        public BookingsController(IMediator mediator, ICacheInvalidator cacheInvalidator)
         {
             _mediator = mediator;
+            _cacheInvalidator = cacheInvalidator;
         }
 
         /// <summary>
@@ -49,7 +53,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Validation failed or room not available.</response>
         /// <response code="401">Unauthorized — the request requires authentication.</response>
         [HttpPost]
-        //[Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -64,6 +68,8 @@ namespace Hotel_Booking_API.Controllers
             };
 
             var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
             return CreatedAtAction(nameof(GetBookingById), new { id = result.Data?.Id }, result);
         }
 
@@ -80,7 +86,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="404">Booking not found.</response>
         /// <response code="401">Unauthorized — the request requires authentication.</response>
         [HttpGet("{id}")]
-        //[Authorize]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -115,7 +121,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Invalid filter or pagination parameters.</response>
         /// <response code="401">Unauthorized — the request requires admin privileges.</response>
         [HttpGet]
-        //[Authorize(Roles = nameof(UserRole.Admin))]
+        [Authorize(Roles = nameof(UserRole.Admin))]
         [ProducesResponseType(typeof(ApiResponse<PagedList<BookingDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PagedList<BookingDto>>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -165,7 +171,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="404">Booking not found.</response>
         /// <response code="401">Unauthorized — the request requires Customer or admin privileges.</response>
         [HttpPatch("{id}")]
-        //[Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status404NotFound)]
@@ -181,6 +187,8 @@ namespace Hotel_Booking_API.Controllers
             };
 
             var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
             return Ok(result);
         }
 
@@ -201,7 +209,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Cannot delete active booking without force delete.</response>
         /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
         [HttpDelete("{id}")]
-        //[Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -219,6 +227,8 @@ namespace Hotel_Booking_API.Controllers
             };
 
             var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
             return Ok(result);
         }
 
@@ -238,7 +248,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="404">Booking not found.</response>
         /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
         [HttpPost("{id}/cancel")]
-        //[Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status404NotFound)]
@@ -254,6 +264,8 @@ namespace Hotel_Booking_API.Controllers
             };
 
             var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
             return Ok(result);
         }
 
@@ -273,7 +285,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="404">Booking not found.</response>
         /// <response code="401">Unauthorized — the request requires admin or hotel manager privileges.</response>
         [HttpPatch("{id}/status")]
-        //[Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status404NotFound)]
@@ -289,6 +301,8 @@ namespace Hotel_Booking_API.Controllers
             };
 
             var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
             return Ok(result);
         }
 
@@ -307,7 +321,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Invalid pagination parameters.</response>
         /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
         [HttpGet("user/{userId}")]
-        //[Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
         [ProducesResponseType(typeof(ApiResponse<PagedList<BookingDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PagedList<BookingDto>>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -341,7 +355,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Invalid pagination parameters.</response>
         /// <response code="401">Unauthorized — the request requires admin or hotel manager privileges.</response>
         [HttpGet("hotel/{hotelId}")]
-        //[Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
         [ProducesResponseType(typeof(ApiResponse<PagedList<BookingDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PagedList<BookingDto>>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

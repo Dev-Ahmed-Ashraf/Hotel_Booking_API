@@ -9,7 +9,7 @@ namespace Hotel_Booking_API.Controllers
 {
     [ApiController]
     [Route("api/admin/dashboard")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class AdminDashboardController : ControllerBase
     {
         private readonly IMediator _mediator;

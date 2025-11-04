@@ -1,9 +1,12 @@
 using Serilog;
+using Microsoft.Extensions.Caching.Memory;
+using Hotel_Booking_API.Infrastructure.Caching;
 
 namespace Hotel_Booking_API.Infrastructure.Templates
 {
     public static class EmailTemplateLoader
     {
+        private static readonly MemoryCache LocalCache = new(new MemoryCacheOptions());
         private static readonly string TemplatesFolder = Path.Combine(
             AppContext.BaseDirectory, 
             "Infrastructure", 
@@ -14,17 +17,28 @@ namespace Hotel_Booking_API.Infrastructure.Templates
         {
             try
             {
-                var templatePath = Path.Combine(TemplatesFolder, templateName);
-                
-                if (!File.Exists(templatePath))
+                var key = CacheKeys.Templates.Email(templateName);
+                if (!LocalCache.TryGetValue(key, out string? template) || template is null)
                 {
-                    Log.Error("Email template not found: {TemplatePath}", templatePath);
-                    throw new FileNotFoundException($"Email template not found: {templateName}");
+                    var templatePath = Path.Combine(TemplatesFolder, templateName);
+                    if (!File.Exists(templatePath))
+                    {
+                        Log.Error("Email template not found: {TemplatePath}", templatePath);
+                        throw new FileNotFoundException($"Email template not found: {templateName}");
+                    }
+
+                    template = File.ReadAllText(templatePath);
+                    var options = new MemoryCacheEntryOptions()
+                        .SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
+                        .SetPriority(CacheItemPriority.Low);
+                    LocalCache.Set(key, template, options);
+                    Log.Debug("Loaded and cached email template: {TemplateName}", templateName);
+                }
+                else
+                {
+                    Log.Debug("Loaded email template from cache: {TemplateName}", templateName);
                 }
 
-                var template = File.ReadAllText(templatePath);
-                Log.Debug("Loaded email template: {TemplateName}", templateName);
-                
                 return template;
             }
             catch (Exception ex)

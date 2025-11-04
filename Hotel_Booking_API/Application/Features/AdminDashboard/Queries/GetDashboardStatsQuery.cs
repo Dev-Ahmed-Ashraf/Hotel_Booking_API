@@ -5,11 +5,15 @@ using Hotel_Booking_API.Infrastructure.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Hotel_Booking_API.Application.Common.Interfaces;
+using Hotel_Booking_API.Infrastructure.Caching;
 
 namespace Hotel_Booking_API.Application.Features.AdminDashboard.Queries
 {
-    public class GetDashboardStatsQuery : IRequest<DashboardStatsDto>
+    public class GetDashboardStatsQuery : IRequest<DashboardStatsDto>, ICacheKeyProvider
     {
+        public string GetCacheKey() => CacheKeys.Admin.DashboardStats();
+        public string? GetCacheProfile() => CacheProfiles.Admin.DashboardStats;
     }
 
     public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQuery, DashboardStatsDto>

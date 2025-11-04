@@ -10,6 +10,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using Hotel_Booking_API.Application.Common.Interfaces;
+using Hotel_Booking_API.Infrastructure.Caching;
 
 namespace Hotel_Booking_API.Controllers
 {
@@ -22,10 +24,12 @@ namespace Hotel_Booking_API.Controllers
     public class HotelsController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ICacheInvalidator _cacheInvalidator;
 
-        public HotelsController(IMediator mediator)
+        public HotelsController(IMediator mediator, ICacheInvalidator cacheInvalidator)
         {
             _mediator = mediator;
+            _cacheInvalidator = cacheInvalidator;
         }
 
         /// <summary>
@@ -105,6 +109,7 @@ namespace Hotel_Booking_API.Controllers
         {
             var command = new CreateHotelCommand { CreateHotelDto = createHotelDto };
             var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Hotels.Prefix);
             return CreatedAtAction(nameof(GetHotels), new { id = result.Data?.Id }, result);
         }
 
@@ -170,6 +175,7 @@ namespace Hotel_Booking_API.Controllers
             };
 
             var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Hotels.Prefix);
             return Ok(result);
         }
 
@@ -200,6 +206,7 @@ namespace Hotel_Booking_API.Controllers
         {
             var command = new DeleteHotelCommand { Id = id, IsSoft = isSoft, ForceDelete = forceDelete };
             var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Hotels.Prefix);
             return NoContent();
         }
     }

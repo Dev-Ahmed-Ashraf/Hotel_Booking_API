@@ -7,6 +7,8 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using Stripe;
+using Hotel_Booking_API.Application.Common.Interfaces;
+using Hotel_Booking_API.Infrastructure.Caching;
 
 namespace Hotel_Booking_API.Controllers
 {
@@ -17,12 +19,14 @@ namespace Hotel_Booking_API.Controllers
         private readonly IStripeService _stripeService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMediator _mediator;
+        private readonly ICacheInvalidator _cacheInvalidator;
 
-        public StripeWebhooksController(IStripeService stripeService, IUnitOfWork unitOfWork, IMediator mediator)
+        public StripeWebhooksController(IStripeService stripeService, IUnitOfWork unitOfWork, IMediator mediator, ICacheInvalidator cacheInvalidator)
         {
             _stripeService = stripeService;
             _unitOfWork = unitOfWork;
             _mediator = mediator;
+            _cacheInvalidator = cacheInvalidator;
         }
 
         [HttpPost]
@@ -104,6 +108,9 @@ namespace Hotel_Booking_API.Controllers
                         Log.Error(ex, "Error publishing PaymentSucceededEvent for PaymentId: {PaymentId}", payment.Id);
                         // Don't fail the webhook if email fails
                     }
+
+                    // Invalidate admin dashboard caches after successful payment
+                    await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Admin.Prefix);
                 }
                 else if (stripeEvent.Type == Events.PaymentIntentPaymentFailed)
                 {

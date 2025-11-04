@@ -10,6 +10,9 @@ using System.Text;
 using FluentValidation;
 using Serilog;
 using MediatR;
+using Microsoft.Extensions.Caching.Memory;
+using Hotel_Booking_API.Infrastructure.Caching;
+using Hotel_Booking_API.Application.Common.Interfaces;
 
 // Application layer imports - Clean Architecture pattern
 using Hotel_Booking_API.Infrastructure.Data;           // Database context
@@ -111,12 +114,26 @@ namespace Hotel_Booking_API
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
 
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
                 });
+
+            // Memory cache and cache settings
+            services.Configure<CacheSettings>(configuration.GetSection("MemoryCache"));
+            services.AddMemoryCache(options =>
+            {
+                var settings = configuration.GetSection("MemoryCache").Get<CacheSettings>();
+                if (settings != null && settings.SizeLimitMB > 0)
+                {
+                    options.SizeLimit = settings.SizeLimitMB * 1024L * 1024L;
+                }
+            });
+            services.AddSingleton<ICacheService, MemoryCacheService>();
+            services.AddSingleton<ICacheInvalidator, CacheInvalidator>();
 
 
             // Configure CORS (Cross-Origin Resource Sharing)

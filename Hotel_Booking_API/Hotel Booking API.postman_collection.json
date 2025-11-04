@@ -1,0 +1,2662 @@
+{
+	"info": {
+		"_postman_id": "b7fce756-ee05-41d3-ae5f-2af4490973b2",
+		"name": "Hotel Booking API",
+		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" width=\"2162\" height=\"1530\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49105909"
+	},
+	"item": [
+		{
+			"name": "Hotels",
+			"item": [
+				{
+					"name": "All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}Hotels?pageNumber=1&pageSize=10&includeDeleted=false",
+							"host": [
+								"{{base_url}}Hotels"
+							],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1",
+									"description": "Number of pages want to Response"
+								},
+								{
+									"key": "pageSize",
+									"value": "10",
+									"description": "Number of data rows in one page"
+								},
+								{
+									"key": "includeDeleted",
+									"value": "false",
+									"description": "If you want to include Soft Hotels Deleted"
+								}
+							]
+						},
+						"description": "Retrieves a paginated list of hotels with optional filtering by city, country, or rating."
+					},
+					"response": [
+						{
+							"name": "All",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Hotels?pageNumber=1&pageSize=10&includeDeleted=false",
+									"host": [
+										"{{base_url}}Hotels"
+									],
+									"query": [
+										{
+											"key": "pageNumber",
+											"value": "1",
+											"description": "Number of pages want to Response"
+										},
+										{
+											"key": "pageSize",
+											"value": "10",
+											"description": "Number of data rows in one page"
+										},
+										{
+											"key": "includeDeleted",
+											"value": "false",
+											"description": "If you want to include Soft Hotels Deleted"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Hotel2 From Postman\",\r\n  \"description\": \"This is Hotel2 From Postman\",\r\n  \"address\": \"Alex-Alex-Alex\",\r\n  \"city\": \"Alex\",\r\n  \"country\": \"Egypt\",\r\n  \"rating\": 3\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Hotels",
+							"host": [
+								"{{base_url}}Hotels"
+							]
+						},
+						"description": "Creates a new hotel in the system."
+					},
+					"response": [
+						{
+							"name": "Create",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Hotel2 From Postman\",\r\n  \"description\": \"This is Hotel2 From Postman\",\r\n  \"address\": \"Alex-Alex-Alex\",\r\n  \"city\": \"Alex\",\r\n  \"country\": \"Egypt\",\r\n  \"rating\": 3\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Hotels",
+									"host": [
+										"{{base_url}}Hotels"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "GetByID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjYiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJQb3N0bWFuQWRtaW5FbWFpbEBnbWFpbC5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUG9zdG1hbkFkbWluIFJlcXVlc3QiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsInJvbGUiOiJBZG1pbiIsImV4cCI6MTc2MjI2NzUzNywiaXNzIjoiSG90ZWxCb29raW5nQVBJIiwiYXVkIjoiSG90ZWxCb29raW5nQVBJVXNlcnMifQ.N-LfoaysAZ1jVXGwSBm7UAei4pnqFC5dAWXsUaecYAM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Hotel From Postman\",\r\n  \"description\": \"This is Hotel From Postman\",\r\n  \"address\": \"Alex-Alex-Alex\",\r\n  \"city\": \"Alex\",\r\n  \"country\": \"Egypt\",\r\n  \"rating\": 3\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}Hotels/15",
+							"host": [
+								"{{base_url}}Hotels"
+							],
+							"path": [
+								"15"
+							]
+						},
+						"description": "Retrieves a specific hotel by its unique identifier."
+					},
+					"response": [
+						{
+							"name": "GetByID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Hotel From Postman\",\r\n  \"description\": \"This is Hotel From Postman\",\r\n  \"address\": \"Alex-Alex-Alex\",\r\n  \"city\": \"Alex\",\r\n  \"country\": \"Egypt\",\r\n  \"rating\": 3\r\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}Hotels/15",
+									"host": [
+										"{{base_url}}Hotels"
+									],
+									"path": [
+										"15"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Hotel From Postman Edited\",\r\n  \"description\": \"This is Hotel From Postman Edited\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Hotels/15",
+							"host": [
+								"{{base_url}}Hotels"
+							],
+							"path": [
+								"15"
+							]
+						},
+						"description": "Updates specific hotel details."
+					},
+					"response": [
+						{
+							"name": "Update",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Hotel From Postman Edited\",\r\n  \"description\": \"This is Hotel From Postman Edited\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Hotels/15",
+									"host": [
+										"{{base_url}}Hotels"
+									],
+									"path": [
+										"15"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}Hotels/15?isSoft=true&forceDelete=false",
+							"host": [
+								"{{base_url}}Hotels"
+							],
+							"path": [
+								"15"
+							],
+							"query": [
+								{
+									"key": "isSoft",
+									"value": "true",
+									"description": "if true, Hotel not deleted from Database"
+								},
+								{
+									"key": "forceDelete",
+									"value": "false",
+									"description": "if true, Hotel deleted permanently"
+								}
+							]
+						},
+						"description": "Deletes a hotel by ID."
+					},
+					"response": [
+						{
+							"name": "Delete",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}Hotels/15?isSoft=true&forceDelete=false",
+									"host": [
+										"{{base_url}}Hotels"
+									],
+									"path": [
+										"15"
+									],
+									"query": [
+										{
+											"key": "isSoft",
+											"value": "true",
+											"description": "if true, Hotel not deleted from Database"
+										},
+										{
+											"key": "forceDelete",
+											"value": "false",
+											"description": "if true, Hotel deleted permanently"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJQb3N0bWFuRW1haWxAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IlBvc3RtYW4gUmVxdWVzdCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkN1c3RvbWVyIiwicm9sZSI6IkN1c3RvbWVyIiwiZXhwIjoxNzYyMjY3MzIxLCJpc3MiOiJIb3RlbEJvb2tpbmdBUEkiLCJhdWQiOiJIb3RlbEJvb2tpbmdBUElVc2VycyJ9.AbcktOEm_8arcHqbRtwtl2CtK6OAyXVnHHTgKFfHkxM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"PostmanAdmin2Email@gmail.com\",\r\n  \"password\": \"Aa@123456789\",\r\n  \"firstName\": \"PostmanAdmin\",\r\n  \"lastName\": \"Request\",\r\n  \"role\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Auth/register",
+							"host": [
+								"{{base_url}}Auth"
+							],
+							"path": [
+								"register"
+							]
+						},
+						"description": "Register a new user"
+					},
+					"response": [
+						{
+							"name": "Register",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"email\": \"PostmanAdmin2Email@gmail.com\",\r\n  \"password\": \"Aa@123456789\",\r\n  \"firstName\": \"PostmanAdmin\",\r\n  \"lastName\": \"Request\",\r\n  \"role\": 1\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Auth/register",
+									"host": [
+										"{{base_url}}Auth"
+									],
+									"path": [
+										"register"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"if (response.token) {\r",
+									"    pm.environment.set(\"access_token\", response.token);\r",
+									"    console.log(\"Access token saved ✅\");\r",
+									"} else {\r",
+									"    console.log(\"⚠️ No token found in response.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJQb3N0bWFuRW1haWxAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IlBvc3RtYW4gUmVxdWVzdCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkN1c3RvbWVyIiwicm9sZSI6IkN1c3RvbWVyIiwiZXhwIjoxNzYyMjY3MzIxLCJpc3MiOiJIb3RlbEJvb2tpbmdBUEkiLCJhdWQiOiJIb3RlbEJvb2tpbmdBUElVc2VycyJ9.AbcktOEm_8arcHqbRtwtl2CtK6OAyXVnHHTgKFfHkxM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"PostmanAdminEmail@gmail.com\",\r\n  \"password\": \"Aa@123456789\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Auth/login",
+							"host": [
+								"{{base_url}}Auth"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Login user"
+					},
+					"response": [
+						{
+							"name": "Login",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"email\": \"PostmanAdminEmail@gmail.com\",\r\n  \"password\": \"Aa@123456789\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Auth/login",
+									"host": [
+										"{{base_url}}Auth"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Rooms",
+			"item": [
+				{
+					"name": "All",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Rooms",
+							"host": [
+								"{{base_url}}Rooms"
+							]
+						},
+						"description": "Retrieves a paginated list of rooms with optional filtering."
+					},
+					"response": [
+						{
+							"name": "All",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Rooms",
+									"host": [
+										"{{base_url}}Rooms"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"hotelId\": 15,\r\n  \"roomNumber\": \"106\",\r\n  \"type\": 0,\r\n  \"price\": 500,\r\n  \"capacity\": 2,\r\n  \"description\": \"This Room Created From Postman\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Rooms",
+							"host": [
+								"{{base_url}}Rooms"
+							]
+						},
+						"description": "Creates a new room in the system."
+					},
+					"response": [
+						{
+							"name": "Create",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"hotelId\": 15,\r\n  \"roomNumber\": \"106\",\r\n  \"type\": 0,\r\n  \"price\": 500,\r\n  \"capacity\": 2,\r\n  \"description\": \"This Room Created From Postman\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Rooms",
+									"host": [
+										"{{base_url}}Rooms"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"description\": \"This Room Created From Postman [Edited version]\"\r\n}\r\n// You can send only the properties that need changes (partial update supported).\r\n// From These properties\r\n// {\r\n//   \"roomNumber\": \"string\",\r\n//   \"type\": 0,\r\n//   \"price\": 0,\r\n//   \"capacity\": 0,\r\n//   \"description\": \"string\"\r\n// }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Rooms/22",
+							"host": [
+								"{{base_url}}Rooms"
+							],
+							"path": [
+								"22"
+							]
+						},
+						"description": "Updates specific room details."
+					},
+					"response": [
+						{
+							"name": "Update",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"description\": \"This Room Created From Postman [Edited version]\"\r\n}\r\n// You can send only the properties that need changes (partial update supported).\r\n// From These properties\r\n// {\r\n//   \"roomNumber\": \"string\",\r\n//   \"type\": 0,\r\n//   \"price\": 0,\r\n//   \"capacity\": 0,\r\n//   \"description\": \"string\"\r\n// }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Rooms/22",
+									"host": [
+										"{{base_url}}Rooms"
+									],
+									"path": [
+										"22"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Rooms/22?isSoft=true&forceDelete=false",
+							"host": [
+								"{{base_url}}Rooms"
+							],
+							"path": [
+								"22"
+							],
+							"query": [
+								{
+									"key": "isSoft",
+									"value": "true",
+									"description": "If true, marks the room as deleted instead of removing it permanently"
+								},
+								{
+									"key": "forceDelete",
+									"value": "false",
+									"description": "If true, forces deletion even if room has active bookings (default: false)"
+								}
+							]
+						},
+						"description": "Deletes a room by ID."
+					},
+					"response": [
+						{
+							"name": "Delete",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "",
+										"value": "",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Rooms/22?isSoft=true&forceDelete=false",
+									"host": [
+										"{{base_url}}Rooms"
+									],
+									"path": [
+										"22"
+									],
+									"query": [
+										{
+											"key": "isSoft",
+											"value": "true",
+											"description": "If true, marks the room as deleted instead of removing it permanently"
+										},
+										{
+											"key": "forceDelete",
+											"value": "false",
+											"description": "If true, forces deletion even if room has active bookings (default: false)"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "GetByID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Rooms/22",
+							"host": [
+								"{{base_url}}Rooms"
+							],
+							"path": [
+								"22"
+							]
+						},
+						"description": "Retrieves a specific room by its unique identifier."
+					},
+					"response": [
+						{
+							"name": "GetByID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Rooms/22",
+									"host": [
+										"{{base_url}}Rooms"
+									],
+									"path": [
+										"22"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Available",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Rooms/available?hotelId=15&checkInDate=2025-11-04T14%3A09%3A12.369Z&checkOutDate=2025-11-07T14%3A09%3A12.369Z&type=0&minCapacity=1&maxPrice=500",
+							"host": [
+								"{{base_url}}Rooms"
+							],
+							"path": [
+								"available"
+							],
+							"query": [
+								{
+									"key": "hotelId",
+									"value": "15",
+									"description": "Hotel ID"
+								},
+								{
+									"key": "checkInDate",
+									"value": "2025-11-04T14%3A09%3A12.369Z",
+									"description": "checkIn Date"
+								},
+								{
+									"key": "checkOutDate",
+									"value": "2025-11-07T14%3A09%3A12.369Z",
+									"description": "checkOut Date"
+								},
+								{
+									"key": "type",
+									"value": "0",
+									"description": "0 => \"Standard\"\n1 =>  \"Deluxe\"\n2 =>  \"Suite\"\n3 =>  \"Presidential\""
+								},
+								{
+									"key": "minCapacity",
+									"value": "1",
+									"description": "minimum number of persons"
+								},
+								{
+									"key": "maxPrice",
+									"value": "500",
+									"description": "maximum Price to Booking"
+								}
+							]
+						},
+						"description": "Retrieves available rooms for a specific date range."
+					},
+					"response": [
+						{
+							"name": "Available",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Rooms/available?hotelId=15&checkInDate=2025-11-04T14%3A09%3A12.369Z&checkOutDate=2025-11-07T14%3A09%3A12.369Z&type=0&minCapacity=1&maxPrice=500",
+									"host": [
+										"{{base_url}}Rooms"
+									],
+									"path": [
+										"available"
+									],
+									"query": [
+										{
+											"key": "hotelId",
+											"value": "15",
+											"description": "Hotel ID"
+										},
+										{
+											"key": "checkInDate",
+											"value": "2025-11-04T14%3A09%3A12.369Z",
+											"description": "checkIn Date"
+										},
+										{
+											"key": "checkOutDate",
+											"value": "2025-11-07T14%3A09%3A12.369Z",
+											"description": "checkOut Date"
+										},
+										{
+											"key": "type",
+											"value": "0",
+											"description": "0 => \"Standard\"\n1 =>  \"Deluxe\"\n2 =>  \"Suite\"\n3 =>  \"Presidential\""
+										},
+										{
+											"key": "minCapacity",
+											"value": "1",
+											"description": "minimum number of persons"
+										},
+										{
+											"key": "maxPrice",
+											"value": "500",
+											"description": "maximum Price to Booking"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Types",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Rooms/types",
+							"host": [
+								"{{base_url}}Rooms"
+							],
+							"path": [
+								"types"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Types",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Rooms/types",
+									"host": [
+										"{{base_url}}Rooms"
+									],
+									"path": [
+										"types"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			],
+			"description": "- Controller for managing room operations in the hotel booking system.\n    \n- Provides CRUD operations for rooms with proper authorization and validation."
+		},
+		{
+			"name": "Bookings",
+			"item": [
+				{
+					"name": "All",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Bookings?pageNumber=1&pageSize=10&includeDeleted=false",
+							"host": [
+								"{{base_url}}Bookings"
+							],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1",
+									"description": "Number of pages want to retreive"
+								},
+								{
+									"key": "pageSize",
+									"value": "10",
+									"description": "number of data rows in one page"
+								},
+								{
+									"key": "hotelId",
+									"value": "8",
+									"description": "Hotel ID which contain bookings",
+									"disabled": true
+								},
+								{
+									"key": "userId",
+									"value": "3",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "0",
+									"description": "Pending = 0,\nConfirmed = 1,\nCancelled = 2,\nCompleted = 3,\nNoShow = 4",
+									"disabled": true
+								},
+								{
+									"key": "startDate",
+									"value": "2025-11-04T14%3A16%3A39.723Z",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2025-11-09T14%3A16%3A39.723Z",
+									"disabled": true
+								},
+								{
+									"key": "includeDeleted",
+									"value": "false",
+									"description": "Whether to include soft-deleted bookings.\nDefault value : false"
+								}
+							]
+						},
+						"description": "Retrieves a paginated list of bookings with optional filtering."
+					},
+					"response": [
+						{
+							"name": "All",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Bookings?pageNumber=1&pageSize=10&includeDeleted=false",
+									"host": [
+										"{{base_url}}Bookings"
+									],
+									"query": [
+										{
+											"key": "pageNumber",
+											"value": "1",
+											"description": "Number of pages want to retreive"
+										},
+										{
+											"key": "pageSize",
+											"value": "10",
+											"description": "number of data rows in one page"
+										},
+										{
+											"key": "hotelId",
+											"value": "8",
+											"description": "Hotel ID which contain bookings",
+											"disabled": true
+										},
+										{
+											"key": "userId",
+											"value": "3",
+											"disabled": true
+										},
+										{
+											"key": "status",
+											"value": "0",
+											"description": "Pending = 0,\nConfirmed = 1,\nCancelled = 2,\nCompleted = 3,\nNoShow = 4",
+											"disabled": true
+										},
+										{
+											"key": "startDate",
+											"value": "2025-11-04T14%3A16%3A39.723Z",
+											"disabled": true
+										},
+										{
+											"key": "endDate",
+											"value": "2025-11-09T14%3A16%3A39.723Z",
+											"disabled": true
+										},
+										{
+											"key": "includeDeleted",
+											"value": "false",
+											"description": "Whether to include soft-deleted bookings.\nDefault value : false"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"roomId\": 21,\r\n  \"checkInDate\": \"2025-11-04T14:26:09.994Z\",\r\n  \"checkOutDate\": \"2025-11-10T14:26:09.994Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Bookings?userid=6",
+							"host": [
+								"{{base_url}}Bookings"
+							],
+							"query": [
+								{
+									"key": "userid",
+									"value": "6",
+									"description": "User ID want to book this Room"
+								}
+							]
+						},
+						"description": "Creates a new booking in the system."
+					},
+					"response": [
+						{
+							"name": "Create",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"roomId\": 21,\r\n  \"checkInDate\": \"2025-11-04T14:26:09.994Z\",\r\n  \"checkOutDate\": \"2025-11-10T14:26:09.994Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Bookings?userid=6",
+									"host": [
+										"{{base_url}}Bookings"
+									],
+									"query": [
+										{
+											"key": "userid",
+											"value": "6",
+											"description": "User ID want to book this Room"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"checkInDate\": \"2025-11-04T14:31:56.933Z\",\r\n  \"checkOutDate\": \"2025-11-12T14:31:56.933Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Bookings/15",
+							"host": [
+								"{{base_url}}Bookings"
+							],
+							"path": [
+								"15"
+							]
+						},
+						"description": "Updates Booking dates."
+					},
+					"response": [
+						{
+							"name": "Update",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"checkInDate\": \"2025-11-04T14:31:56.933Z\",\r\n  \"checkOutDate\": \"2025-11-12T14:31:56.933Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Bookings/15",
+									"host": [
+										"{{base_url}}Bookings"
+									],
+									"path": [
+										"15"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Bookings/15?isSoft=true&forceDelete=false",
+							"host": [
+								"{{base_url}}Bookings"
+							],
+							"path": [
+								"15"
+							],
+							"query": [
+								{
+									"key": "isSoft",
+									"value": "true",
+									"description": "If true, marks the booking as deleted instead of removing it permanently"
+								},
+								{
+									"key": "forceDelete",
+									"value": "false",
+									"description": "If true, forces deletion even if booking is active"
+								}
+							]
+						},
+						"description": "Deletes a booking by ID."
+					},
+					"response": [
+						{
+							"name": "Delete",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Bookings/15?isSoft=true&forceDelete=false",
+									"host": [
+										"{{base_url}}Bookings"
+									],
+									"path": [
+										"15"
+									],
+									"query": [
+										{
+											"key": "isSoft",
+											"value": "true",
+											"description": "If true, marks the booking as deleted instead of removing it permanently"
+										},
+										{
+											"key": "forceDelete",
+											"value": "false",
+											"description": "If true, forces deletion even if booking is active"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "GetByID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Bookings/15",
+							"host": [
+								"{{base_url}}Bookings"
+							],
+							"path": [
+								"15"
+							]
+						},
+						"description": "Retrieves a specific booking by its unique identifier."
+					},
+					"response": [
+						{
+							"name": "GetByID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Bookings/15",
+									"host": [
+										"{{base_url}}Bookings"
+									],
+									"path": [
+										"15"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Cancel",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"reason\": \"No reason\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Bookings/15/Cancel",
+							"host": [
+								"{{base_url}}Bookings"
+							],
+							"path": [
+								"15",
+								"Cancel"
+							]
+						},
+						"description": "Cancels an existing booking."
+					},
+					"response": [
+						{
+							"name": "Cancel",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"reason\": \"No reason\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Bookings/15/Cancel",
+									"host": [
+										"{{base_url}}Bookings"
+									],
+									"path": [
+										"15",
+										"Cancel"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Update Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"status\": 1,\r\n  \"notes\": \"Transition from Postman\"\r\n}\r\n        // Pending = 0,\r\n        // Confirmed = 1,\r\n        // Cancelled = 2,\r\n        // Completed = 3,\r\n        // NoShow = 4",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Bookings/15/Status",
+							"host": [
+								"{{base_url}}Bookings"
+							],
+							"path": [
+								"15",
+								"Status"
+							]
+						},
+						"description": "Changes the status of an existing booking."
+					},
+					"response": [
+						{
+							"name": "Update Status",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"status\": 1,\r\n  \"notes\": \"Transition from Postman\"\r\n}\r\n        // Pending = 0,\r\n        // Confirmed = 1,\r\n        // Cancelled = 2,\r\n        // Completed = 3,\r\n        // NoShow = 4",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Bookings/15/Status",
+									"host": [
+										"{{base_url}}Bookings"
+									],
+									"path": [
+										"15",
+										"Status"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "BookingsForUser",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Bookings/user/3?pageNumber=1&pageSize=10",
+							"host": [
+								"{{base_url}}Bookings"
+							],
+							"path": [
+								"user",
+								"3"
+							],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Retrieves all bookings for a specific user."
+					},
+					"response": [
+						{
+							"name": "BookingsForUser",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Bookings/user/3?pageNumber=1&pageSize=10",
+									"host": [
+										"{{base_url}}Bookings"
+									],
+									"path": [
+										"user",
+										"3"
+									],
+									"query": [
+										{
+											"key": "pageNumber",
+											"value": "1"
+										},
+										{
+											"key": "pageSize",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "BookingsForHotel",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Bookings/hotel/15?pageNumber=1&pageSize=10",
+							"host": [
+								"{{base_url}}Bookings"
+							],
+							"path": [
+								"hotel",
+								"15"
+							],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Retrieves all bookings for a specific hotel."
+					},
+					"response": [
+						{
+							"name": "BookingsForHotel",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Bookings/hotel/15?pageNumber=1&pageSize=10",
+									"host": [
+										"{{base_url}}Bookings"
+									],
+									"path": [
+										"hotel",
+										"15"
+									],
+									"query": [
+										{
+											"key": "pageNumber",
+											"value": "1"
+										},
+										{
+											"key": "pageSize",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Check-Availability",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Bookings/check-availability?roomId=22&checkInDate=2025-11-04T14%3A26%3A09.994Z&checkOutDate=2025-11-10T14%3A26%3A09.994Z",
+							"host": [
+								"{{base_url}}Bookings"
+							],
+							"path": [
+								"check-availability"
+							],
+							"query": [
+								{
+									"key": "roomId",
+									"value": "22"
+								},
+								{
+									"key": "checkInDate",
+									"value": "2025-11-04T14%3A26%3A09.994Z"
+								},
+								{
+									"key": "checkOutDate",
+									"value": "2025-11-10T14%3A26%3A09.994Z"
+								}
+							]
+						},
+						"description": "Checks if a room is available for the specified date range."
+					},
+					"response": [
+						{
+							"name": "Check-Availability",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Bookings/check-availability?roomId=22&checkInDate=2025-11-04T14%3A26%3A09.994Z&checkOutDate=2025-11-10T14%3A26%3A09.994Z",
+									"host": [
+										"{{base_url}}Bookings"
+									],
+									"path": [
+										"check-availability"
+									],
+									"query": [
+										{
+											"key": "roomId",
+											"value": "22"
+										},
+										{
+											"key": "checkInDate",
+											"value": "2025-11-04T14%3A26%3A09.994Z"
+										},
+										{
+											"key": "checkOutDate",
+											"value": "2025-11-10T14%3A26%3A09.994Z"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Calculate-Price",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Bookings/calculate-price?roomId=21&checkInDate=2025-11-04T14%3A26%3A09.994Z&checkOutDate=2025-11-10T14%3A26%3A09.994Z",
+							"host": [
+								"{{base_url}}Bookings"
+							],
+							"path": [
+								"calculate-price"
+							],
+							"query": [
+								{
+									"key": "roomId",
+									"value": "21"
+								},
+								{
+									"key": "checkInDate",
+									"value": "2025-11-04T14%3A26%3A09.994Z"
+								},
+								{
+									"key": "checkOutDate",
+									"value": "2025-11-10T14%3A26%3A09.994Z"
+								}
+							]
+						},
+						"description": "Calculates the total price for a booking with the specified room and date range."
+					},
+					"response": [
+						{
+							"name": "Calculate-Price",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Bookings/calculate-price?roomId=21&checkInDate=2025-11-04T14%3A26%3A09.994Z&checkOutDate=2025-11-10T14%3A26%3A09.994Z",
+									"host": [
+										"{{base_url}}Bookings"
+									],
+									"path": [
+										"calculate-price"
+									],
+									"query": [
+										{
+											"key": "roomId",
+											"value": "21"
+										},
+										{
+											"key": "checkInDate",
+											"value": "2025-11-04T14%3A26%3A09.994Z"
+										},
+										{
+											"key": "checkOutDate",
+											"value": "2025-11-10T14%3A26%3A09.994Z"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			],
+			"description": "``` csharp\n/// Controller for managing booking operations in the hotel booking system.\n/// Provides CRUD operations for bookings with proper authorization and validation.\n\n ```"
+		},
+		{
+			"name": "Reviews",
+			"item": [
+				{
+					"name": "All",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Reviews?pageNumber=1&pageSize=10&includeDeleted=false",
+							"host": [
+								"{{base_url}}Reviews"
+							],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "hotelId",
+									"value": "15",
+									"disabled": true
+								},
+								{
+									"key": "userId",
+									"value": "6",
+									"disabled": true
+								},
+								{
+									"key": "minRating",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "maxRating",
+									"value": "4",
+									"disabled": true
+								},
+								{
+									"key": "includeDeleted",
+									"value": "false"
+								}
+							]
+						},
+						"description": "Retrieves a paginated list of reviews with optional filtering."
+					},
+					"response": [
+						{
+							"name": "All",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Reviews?pageNumber=1&pageSize=10&includeDeleted=false",
+									"host": [
+										"{{base_url}}Reviews"
+									],
+									"query": [
+										{
+											"key": "pageNumber",
+											"value": "1"
+										},
+										{
+											"key": "pageSize",
+											"value": "10"
+										},
+										{
+											"key": "hotelId",
+											"value": "15",
+											"disabled": true
+										},
+										{
+											"key": "userId",
+											"value": "6",
+											"disabled": true
+										},
+										{
+											"key": "minRating",
+											"value": "1",
+											"disabled": true
+										},
+										{
+											"key": "maxRating",
+											"value": "4",
+											"disabled": true
+										},
+										{
+											"key": "includeDeleted",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"hotelId\": 15,\r\n  \"rating\": 4,\r\n  \"comment\": \"Rating From Postman\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Reviews?userid=6",
+							"host": [
+								"{{base_url}}Reviews"
+							],
+							"query": [
+								{
+									"key": "userid",
+									"value": "6"
+								}
+							]
+						},
+						"description": "Creates a new review in the system."
+					},
+					"response": [
+						{
+							"name": "Create",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"hotelId\": 15,\r\n  \"rating\": 4,\r\n  \"comment\": \"Rating From Postman\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Reviews?userid=6",
+									"host": [
+										"{{base_url}}Reviews"
+									],
+									"query": [
+										{
+											"key": "userid",
+											"value": "6"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "GetByID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Reviews/6",
+							"host": [
+								"{{base_url}}Reviews"
+							],
+							"path": [
+								"6"
+							]
+						},
+						"description": "Retrieves a specific review by its unique identifier."
+					},
+					"response": [
+						{
+							"name": "GetByID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Reviews/6",
+									"host": [
+										"{{base_url}}Reviews"
+									],
+									"path": [
+										"6"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"rating\": 2,\r\n  \"comment\": \"Update Rating Form Postman\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Reviews/6",
+							"host": [
+								"{{base_url}}Reviews"
+							],
+							"path": [
+								"6"
+							]
+						},
+						"description": "Updates an existing review."
+					},
+					"response": [
+						{
+							"name": "Update",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"rating\": 2,\r\n  \"comment\": \"Update Rating Form Postman\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}Reviews/6",
+									"host": [
+										"{{base_url}}Reviews"
+									],
+									"path": [
+										"6"
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Reviews/6?isSoft=true",
+							"host": [
+								"{{base_url}}Reviews"
+							],
+							"path": [
+								"6"
+							],
+							"query": [
+								{
+									"key": "isSoft",
+									"value": "true",
+									"description": "If true, marks the review as deleted instead of removing it permanently"
+								}
+							]
+						},
+						"description": "Deletes a review by ID."
+					},
+					"response": [
+						{
+							"name": "Delete",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Reviews/6?isSoft=true",
+									"host": [
+										"{{base_url}}Reviews"
+									],
+									"path": [
+										"6"
+									],
+									"query": [
+										{
+											"key": "isSoft",
+											"value": "true",
+											"description": "If true, marks the review as deleted instead of removing it permanently"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "ReviewsForHotel",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Reviews/hotel/15?pageNumber=1&pageSize=10",
+							"host": [
+								"{{base_url}}Reviews"
+							],
+							"path": [
+								"hotel",
+								"15"
+							],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Retrieves all reviews for a specific hotel."
+					},
+					"response": [
+						{
+							"name": "ReviewsForHotel",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}Reviews/hotel/15?pageNumber=1&pageSize=10",
+									"host": [
+										"{{base_url}}Reviews"
+									],
+									"path": [
+										"hotel",
+										"15"
+									],
+									"query": [
+										{
+											"key": "pageNumber",
+											"value": "1"
+										},
+										{
+											"key": "pageSize",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "ReviewsForUser",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}Reviews/user/3?pageNumber=1&pageSize=10",
+							"host": [
+								"{{base_url}}Reviews"
+							],
+							"path": [
+								"user",
+								"3"
+							],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Retrieves all reviews for a specific user."
+					},
+					"response": [
+						{
+							"name": "ReviewsForUser",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}Reviews/user/3?pageNumber=1&pageSize=10",
+									"host": [
+										"{{base_url}}Reviews"
+									],
+									"path": [
+										"user",
+										"3"
+									],
+									"query": [
+										{
+											"key": "pageNumber",
+											"value": "1"
+										},
+										{
+											"key": "pageSize",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			],
+			"description": "- Controller for managing review operations in the hotel booking system.\n    \n- Provides CRUD operations for reviews with proper authorization and validation."
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"bookingId\": 14\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}Payments/intents",
+							"host": [
+								"{{base_url}}Payments"
+							],
+							"path": [
+								"intents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetByID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}Payments/1",
+							"host": [
+								"{{base_url}}Payments"
+							],
+							"path": [
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PaymentForBooking",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}bookings/14/payment",
+							"host": [
+								"{{base_url}}bookings"
+							],
+							"path": [
+								"14",
+								"payment"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "StripeWebhooks",
+			"item": [
+				{
+					"name": "New Request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}stripe/webhook",
+							"host": [
+								"{{base_url}}stripe"
+							],
+							"path": [
+								"webhook"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AdminDashboard",
+			"item": [
+				{
+					"name": "DashboardData",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}admin/Dashboard",
+							"host": [
+								"{{base_url}}admin"
+							],
+							"path": [
+								"Dashboard"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://template.postman-echo.com"
+		}
+	]
+}
