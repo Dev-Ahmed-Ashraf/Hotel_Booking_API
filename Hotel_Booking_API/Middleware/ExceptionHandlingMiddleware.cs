@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using FluentValidation;
-using System.Net;
 using Hotel_Booking_API.Application.Common.Exceptions;
+using System.Net;
 
 namespace Hotel_Booking_API.Middleware
 {
@@ -58,12 +56,12 @@ namespace Hotel_Booking_API.Middleware
 
                 case UnauthorizedException ue:
                 case UnauthorizedAccessException ue2:
-                    { 
-                    statusCode = (int)HttpStatusCode.Unauthorized;
-                    title = "Unauthorized";
-                    message = (exception as Exception).Message;
-                    break;
-                }
+                    {
+                        statusCode = (int)HttpStatusCode.Unauthorized;
+                        title = "Unauthorized";
+                        message = (exception as Exception).Message;
+                        break;
+                    }
                 case ForbiddenException fe:
                     statusCode = (int)HttpStatusCode.Forbidden;
                     title = "Forbidden";

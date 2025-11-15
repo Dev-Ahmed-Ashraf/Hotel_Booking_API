@@ -36,7 +36,7 @@ namespace Hotel_Booking_API.Infrastructure.Services
                 };
 
                 await client.SendMailAsync(message);
-                
+
                 Log.Information("Successfully sent email to {Email} with subject: {Subject}", to, subject);
             }
             catch (SmtpException ex)

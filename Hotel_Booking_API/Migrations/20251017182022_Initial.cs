@@ -1,11 +1,10 @@
-﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace Hotel_Booking.Migrations
+namespace Hotel_Booking_API.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration

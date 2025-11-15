@@ -1,9 +1,9 @@
+using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.DTOs;
+using Hotel_Booking_API.Application.Features.Authentication.Commands.LoginUser;
+using Hotel_Booking_API.Application.Features.Authentication.Commands.RegisterUser;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Hotel_Booking_API.Application.DTOs;
-using Hotel_Booking_API.Application.Features.Authentication.Commands.RegisterUser;
-using Hotel_Booking_API.Application.Features.Authentication.Commands.LoginUser;
-using Hotel_Booking_API.Application.Common;
 
 namespace Hotel_Booking_API.Controllers
 {

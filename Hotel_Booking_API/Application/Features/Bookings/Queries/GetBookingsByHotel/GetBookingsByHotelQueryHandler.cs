@@ -1,16 +1,15 @@
-﻿using AutoMapper;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
-using Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByHotel;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Infrastructure.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace Hotel_Booking.Application.Features.Bookings.Queries.GetBookingsByHotel
+namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByHotel
 {
     public class GetBookingsByHotelQueryHandler : IRequestHandler<GetBookingsByHotelQuery, ApiResponse<PagedList<BookingDto>>>
     {

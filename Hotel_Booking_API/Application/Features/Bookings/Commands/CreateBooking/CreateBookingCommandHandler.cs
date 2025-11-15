@@ -47,7 +47,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking
 
                 // Validate that the room exists and is not deleted
                 var room = await _unitOfWork.Rooms.GetByIdAsync(
-                    request.CreateBookingDto.RoomId, 
+                    request.CreateBookingDto.RoomId,
                     cancellationToken,
                     r => r.Hotel
                 );
@@ -59,7 +59,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking
                 }
 
                 // Check Room Availability (excluding Cancelled & Completed)
-                var isAvailable = await _unitOfWork.RoomRepository.IsRoomAvailableAsync(
+                var isAvailable = await _unitOfWork.Rooms.IsRoomAvailableAsync(
                     room.Id,
                     request.CreateBookingDto.CheckInDate,
                     request.CreateBookingDto.CheckOutDate,
@@ -111,7 +111,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking
                 bookingDto.RoomNumber = room.RoomNumber;
                 bookingDto.HotelName = room.Hotel.Name;
 
-                Log.Information("Booking created successfully with ID {BookingId} for user {UserId} in room {RoomId}", 
+                Log.Information("Booking created successfully with ID {BookingId} for user {UserId} in room {RoomId}",
                     booking.Id, booking.UserId, booking.RoomId);
                 Log.Information("Completed {HandlerName} successfully", nameof(CreateBookingCommandHandler));
 

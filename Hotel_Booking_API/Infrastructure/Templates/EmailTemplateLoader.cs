@@ -1,6 +1,6 @@
-using Serilog;
-using Microsoft.Extensions.Caching.Memory;
 using Hotel_Booking_API.Infrastructure.Caching;
+using Microsoft.Extensions.Caching.Memory;
+using Serilog;
 
 namespace Hotel_Booking_API.Infrastructure.Templates
 {
@@ -8,8 +8,8 @@ namespace Hotel_Booking_API.Infrastructure.Templates
     {
         private static readonly MemoryCache LocalCache = new(new MemoryCacheOptions());
         private static readonly string TemplatesFolder = Path.Combine(
-            AppContext.BaseDirectory, 
-            "Infrastructure", 
+            AppContext.BaseDirectory,
+            "Infrastructure",
             "Templates"
         );
 
@@ -53,14 +53,14 @@ namespace Hotel_Booking_API.Infrastructure.Templates
             try
             {
                 var filledTemplate = template;
-                
+
                 foreach (var placeholder in placeholders)
                 {
                     filledTemplate = filledTemplate.Replace($"{{{{{placeholder.Key}}}}}", placeholder.Value);
                 }
 
                 Log.Debug("Filled email template with {Count} placeholders", placeholders.Count);
-                
+
                 return filledTemplate;
             }
             catch (Exception ex)

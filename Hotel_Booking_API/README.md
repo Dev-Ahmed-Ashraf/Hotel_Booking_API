@@ -86,21 +86,18 @@ To test all API endpoints:
 
 ### Database Setup
 
-The application automatically creates the database and seeds initial data on first run:
+Use EF Core migrations for database creation and updates:
 
-- **Admin User**: 
-  - Email: `admin@hotelbooking.com`
-  - Password: `Admin123!`
-  - Role: Admin
-
-- **Sample Hotels**: Grand Palace Hotel (New York), Ocean View Resort (Miami)
-- **Sample Rooms**: Various room types with different pricing
+```bash
+dotnet ef database update
+```
 
 ## 📚 API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register a new user
 - `POST /api/auth/login` - Login and get JWT token
+
 
 ### Hotels
 - `GET /api/hotels` - Get all hotels (with pagination and search)
@@ -116,10 +113,17 @@ The application automatically creates the database and seeds initial data on fir
 - `PUT /api/rooms/{id}` - Update room (Admin/Hotel Manager)
 
 ### Bookings
-- `GET /api/bookings` - Get user's bookings
-- `POST /api/bookings` - Create new booking
-- `PUT /api/bookings/{id}` - Update booking
-- `DELETE /api/bookings/{id}` - Cancel booking
+- `POST /api/bookings` - Create booking (Customer/Admin)
+- `GET /api/bookings/{id}` - Get booking by id (Authorized)
+- `GET /api/bookings` - List bookings with pagination and filters (Admin)
+- `PATCH /api/bookings/{id}` - Update booking dates (Customer/Admin)
+- `DELETE /api/bookings/{id}` - Delete or soft-delete booking (Owner/Admin)
+- `POST /api/bookings/{id}/cancel` - Cancel booking (Owner/Admin)
+- `PATCH /api/bookings/{id}/status` - Change booking status (Admin/HotelManager)
+- `GET /api/bookings/user/{userId}` - Get bookings for a user (Owner/Admin)
+- `GET /api/bookings/hotel/{hotelId}` - Get bookings for a hotel (Admin/HotelManager)
+- `GET /api/bookings/check-availability` - Public: check room availability
+- `GET /api/bookings/calculate-price` - Public: calculate booking price
 
 ### Reviews
 - `GET /api/reviews/hotel/{hotelId}` - Get hotel reviews
@@ -151,7 +155,7 @@ Authorization: Bearer <your-jwt-token>
 ```json
 {
   "JwtSettings": {
-    "SecretKey": "YourSuperSecretKeyThatIsAtLeast32CharactersLong!",
+    "SecretKey": "<set-via-env-or-user-secrets>",
     "Issuer": "HotelBookingAPI",
     "Audience": "HotelBookingAPIUsers",
     "ExpirationMinutes": 60
@@ -190,14 +194,12 @@ Authorization: Bearer <your-jwt-token>
 {
   "Cors": {
     "AllowedOrigins": [
-      "http://localhost:3000",
-      "http://localhost:4200",
-      "https://localhost:3000",
-      "https://localhost:4200"
+      "https://your-production-frontend.example.com"
     ]
   }
 }
 ```
+For local development, use `appsettings.Development.json` with localhost origins.
 
 ### Stripe Settings
 ```json
@@ -291,7 +293,7 @@ Hotel_Booking_API/
 
 ### Database Migrations
 
-The application uses `EnsureCreated()` for simplicity. For production, use EF Core migrations:
+Use EF Core migrations in all environments:
 
 ```bash
 # Add migration

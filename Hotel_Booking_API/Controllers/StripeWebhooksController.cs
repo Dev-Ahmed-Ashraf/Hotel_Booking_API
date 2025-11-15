@@ -1,14 +1,13 @@
+using Hotel_Booking_API.Application.Common.Interfaces;
 using Hotel_Booking_API.Application.Events;
-using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Enums;
 using Hotel_Booking_API.Domain.Interfaces;
+using Hotel_Booking_API.Infrastructure.Caching;
 using Hotel_Booking_API.Infrastructure.Services;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using Stripe;
-using Hotel_Booking_API.Application.Common.Interfaces;
-using Hotel_Booking_API.Infrastructure.Caching;
 
 namespace Hotel_Booking_API.Controllers
 {

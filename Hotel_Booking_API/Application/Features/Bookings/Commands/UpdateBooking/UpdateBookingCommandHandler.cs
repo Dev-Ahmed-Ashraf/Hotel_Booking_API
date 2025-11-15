@@ -2,7 +2,6 @@ using AutoMapper;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
-using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Enums;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
@@ -87,7 +86,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
                     // Validate new date range
                     if (booking.CheckInDate >= booking.CheckOutDate)
                     {
-                        Log.Warning("Invalid date range in update: CheckIn {CheckInDate} >= CheckOut {CheckOutDate}", 
+                        Log.Warning("Invalid date range in update: CheckIn {CheckInDate} >= CheckOut {CheckOutDate}",
                             booking.CheckInDate, booking.CheckOutDate);
                         throw new BadRequestException("Check-out date must be after check-in date.");
                     }
@@ -104,7 +103,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
 
                     if (conflictingBookings.Any())
                     {
-                        Log.Warning("Room has conflicting bookings for new dates: {RoomId}, BookingId: {BookingId}", 
+                        Log.Warning("Room has conflicting bookings for new dates: {RoomId}, BookingId: {BookingId}",
                             booking.RoomId, request.Id);
                         throw new ConflictException("Room is not available for the new date range.");
                     }

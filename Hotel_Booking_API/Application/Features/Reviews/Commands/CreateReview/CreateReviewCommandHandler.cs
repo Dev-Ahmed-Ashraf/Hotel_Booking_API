@@ -80,7 +80,7 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.CreateReview
                 // Map entity back to DTO for response
                 var reviewDto = _mapper.Map<ReviewDto>(createdReview);
 
-                Log.Information("Review created successfully with ID {ReviewId} for user {UserId} on hotel {HotelId}", 
+                Log.Information("Review created successfully with ID {ReviewId} for user {UserId} on hotel {HotelId}",
                     review.Id, review.UserId, review.HotelId);
                 Log.Information("Completed {HandlerName} successfully", nameof(CreateReviewCommandHandler));
 

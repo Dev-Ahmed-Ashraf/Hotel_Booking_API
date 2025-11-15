@@ -1,12 +1,8 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Hotel_Booking_API.Application.Features.Hotels.Queries.GetHotels;
 
 namespace Hotel_Booking_API.Application.Validators.HotelValidators
 {
-    /// <summary>
-    /// Validator for GetHotelsQuery to ensure all search parameters are valid.
-    /// Validates pagination, search criteria, and business rules.
-    /// </summary>
     public class GetHotelsValidator : AbstractValidator<GetHotelsQuery>
     {
         public GetHotelsValidator()

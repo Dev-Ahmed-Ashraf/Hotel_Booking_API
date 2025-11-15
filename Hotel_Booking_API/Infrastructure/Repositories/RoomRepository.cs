@@ -1,15 +1,16 @@
-﻿using Hotel_Booking.Domain.Interfaces;
+using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Enums;
+using Hotel_Booking_API.Domain.Interfaces;
 using Hotel_Booking_API.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hotel_Booking.Infrastructure.Repositories
+namespace Hotel_Booking_API.Infrastructure.Repositories
 {
-    public class RoomRepository : IRoomRepository
+    public class RoomRepository : Repository<Room>, IRoomRepository
     {
         private readonly ApplicationDbContext _dbContext;
 
-        public RoomRepository(ApplicationDbContext dbContext) 
+        public RoomRepository(ApplicationDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
         }
@@ -20,15 +21,18 @@ namespace Hotel_Booking.Infrastructure.Repositories
             DateTime endDate,
             CancellationToken cancellationToken = default)
         {
-            var overlappingBookings = await _dbContext.Bookings
-                .Where(b => b.RoomId == roomId &&
-                            b.CheckInDate < endDate &&
-                            b.CheckOutDate > startDate &&
-                            b.Status != BookingStatus.Cancelled &&
-                            b.Status != BookingStatus.Completed)
+            return !await _dbContext.Bookings
+                .AsNoTracking()
+                .Where(b =>
+                    b.RoomId == roomId &&
+                    !b.IsDeleted &&
+                    b.Status != BookingStatus.Cancelled &&
+                    b.Status != BookingStatus.Completed &&
+                    b.CheckInDate < endDate &&    // Overlap logic
+                    b.CheckOutDate > startDate
+                )
                 .AnyAsync(cancellationToken);
-
-            return !overlappingBookings;
         }
+
     }
 }

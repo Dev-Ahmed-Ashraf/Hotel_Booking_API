@@ -1,18 +1,19 @@
+using Hotel_Booking_API.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Hotel_Booking_API.Domain.Entities;
 
 namespace Hotel_Booking_API.Infrastructure.Data.Configurations
 {
     public class ReviewConfiguration : IEntityTypeConfiguration<Review>
     {
+        [Obsolete]
         public void Configure(EntityTypeBuilder<Review> builder)
         {
             builder.HasKey(r => r.Id);
-            
+
             builder.Property(r => r.Rating)
                 .IsRequired();
-                
+
             builder.Property(r => r.Comment)
                 .HasMaxLength(1000);
 

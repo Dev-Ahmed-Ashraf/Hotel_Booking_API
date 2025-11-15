@@ -1,7 +1,7 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Hotel_Booking_API.Application.Features.Bookings.Queries.CheckRoomAvailability;
 
-namespace Hotel_Booking.Application.Validators.BookingValidators
+namespace Hotel_Booking_API.Application.Validators.BookingValidators
 {
     public class CheckRoomAvailabilityValidator : AbstractValidator<CheckRoomAvailabilityQuery>
     {

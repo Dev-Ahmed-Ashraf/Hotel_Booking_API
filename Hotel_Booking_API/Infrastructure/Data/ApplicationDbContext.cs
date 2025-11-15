@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Infrastructure.Data.Configurations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hotel_Booking_API.Infrastructure.Data
 {

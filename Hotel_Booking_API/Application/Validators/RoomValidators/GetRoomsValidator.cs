@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Hotel_Booking_API.Application.Features.Rooms.Queries.GetRooms;
 
 namespace Hotel_Booking_API.Application.Validators.RoomValidators
@@ -51,7 +51,6 @@ namespace Hotel_Booking_API.Application.Validators.RoomValidators
                     .LessThanOrEqualTo(10000).WithMessage("Maximum price cannot exceed $10,000")
                     .When(x => x.Search!.MaxPrice.HasValue);
 
-                // Ensure max price is greater than min price when both are provided
                 RuleFor(x => x.Search!.MaxPrice)
                     .GreaterThan(x => x.Search!.MinPrice).WithMessage("Maximum price must be greater than minimum price")
                     .When(x => x.Search!.MinPrice.HasValue && x.Search!.MaxPrice.HasValue);

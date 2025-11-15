@@ -1,12 +1,11 @@
-﻿using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
-using Hotel_Booking_API.Application.Features.Bookings.Queries.CalculateBookingPrice;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
 using Serilog;
 
-namespace Hotel_Booking.Application.Features.Bookings.Queries.CalculateBookingPrice
+namespace Hotel_Booking_API.Application.Features.Bookings.Queries.CalculateBookingPrice
 {
     public class CalculateBookingPriceHandler : IRequestHandler<CalculateBookingPriceQuery, ApiResponse<BookingPriceResponseDto>>
     {
@@ -33,7 +32,7 @@ namespace Hotel_Booking.Application.Features.Bookings.Queries.CalculateBookingPr
                 // Calculate nights
                 int nights = (request.CheckOutDate - request.CheckInDate).Days;
 
-                // 3️⃣ Calculate total price
+                // 3?? Calculate total price
                 decimal totalPrice = nights * room.Price;
 
                 var result = new BookingPriceResponseDto

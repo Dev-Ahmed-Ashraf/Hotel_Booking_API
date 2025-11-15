@@ -1,31 +1,24 @@
-﻿
-// Core ASP.NET Core and Entity Framework imports
-using Microsoft.EntityFrameworkCore;
+using FluentValidation;
+using Hotel_Booking_API.Application.Common.Behaviors;
+using Hotel_Booking_API.Application.Common.Interfaces;
+using Hotel_Booking_API.Application.Mappings;
+using Hotel_Booking_API.Application.Validators.AuthValidators;
+using Hotel_Booking_API.Domain.Interfaces;
+using Hotel_Booking_API.Infrastructure.Caching;
+using Hotel_Booking_API.Infrastructure.Data;
+using Hotel_Booking_API.Infrastructure.Repositories;
+using Hotel_Booking_API.Infrastructure.Services;
+using Hotel_Booking_API.Middleware;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
-
-// Third-party libraries for validation, logging, and CQRS
-using FluentValidation;
 using Serilog;
-using MediatR;
-using Microsoft.Extensions.Caching.Memory;
-using Hotel_Booking_API.Infrastructure.Caching;
-using Hotel_Booking_API.Application.Common.Interfaces;
-
-// Application layer imports - Clean Architecture pattern
-using Hotel_Booking_API.Infrastructure.Data;           // Database context
-using Hotel_Booking_API.Infrastructure.Repositories;  // Repository pattern implementation
-using Hotel_Booking_API.Infrastructure.Services;      // JWT service and other infrastructure services
-using Hotel_Booking_API.Domain.Interfaces;             // Domain layer interfaces
-using Hotel_Booking_API.Application.Mappings;         // AutoMapper profiles
-using Hotel_Booking_API.Application.Common.Behaviors;  // MediatR pipeline behaviors
-using Hotel_Booking_API.Middleware;                   // Custom middleware
-using Hotel_Booking.Application.Validators.AuthValidators;
-using Hotel_Booking.Domain.Interfaces;
-using Hotel_Booking.Infrastructure.Repositories;
-using Hotel_Booking_API.Infrastructure.Services;
+using System.Text;
+using System.Threading.RateLimiting;
 
 namespace Hotel_Booking_API
 {
@@ -33,45 +26,37 @@ namespace Hotel_Booking_API
     {
         public static void Main(string[] args)
         {
-            // Configure Serilog for application logging
-            // Reads configuration from appsettings.json and sets up logging
+            // Temporary bootstrap logger (logs during startup)
             Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(new ConfigurationBuilder()
-                    .AddJsonFile("appsettings.json")
-                    .Build())
-                .CreateLogger();
-
+                .WriteTo.Console()
+                .CreateBootstrapLogger();
 
             try
             {
                 Log.Information("Starting Hotel Booking API");
 
-                // Create and configure the web application builder
+                // Create the web app builder (loads all configurations automatically)
                 var builder = WebApplication.CreateBuilder(args);
 
-                // Use Serilog for logging throughout the application
+                // Proper Serilog configuration (uses builder.Configuration)
+                Log.Logger = new LoggerConfiguration()
+                    .ReadFrom.Configuration(builder.Configuration)
+                    .CreateLogger();
+
                 builder.Host.UseSerilog();
 
-                // Configure application services and dependency injection
+                // Configure services & middleware as usual
                 ConfigureServices(builder.Services, builder.Configuration);
-
-                // Build the application
                 var app = builder.Build();
-
-                // Configure the HTTP request pipeline
                 ConfigureMiddleware(app);
-
-                // Run the application
                 app.Run();
             }
             catch (Exception ex)
             {
-                // Log any unhandled exceptions that might occur during startup
                 Log.Fatal(ex, "Application terminated unexpectedly");
             }
             finally
             {
-                // Ensure all logs are properly flushed before exiting
                 Log.CloseAndFlush();
             }
         }
@@ -110,17 +95,47 @@ namespace Hotel_Booking_API
             services.AddAutoMapper(typeof(MappingProfile));
 
             // Configure FluentValidation with custom behaviors
-            services.AddValidatorsFromAssembly(typeof(RegisterUserValidator).Assembly);
+            services.AddValidatorsFromAssembly(typeof(Program).Assembly);
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
 
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
                 });
+
+            // Response compression
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<GzipCompressionProvider>();
+            });
+
+            // Output caching
+            services.AddOutputCache();
+
+            // Rate limiting (fixed window per IP)
+            services.AddRateLimiter(options =>
+            {
+                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                {
+                    var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 100,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    });
+                });
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+            // Health checks
+            services.AddHealthChecks();
 
             // Memory cache and cache settings
             services.Configure<CacheSettings>(configuration.GetSection("MemoryCache"));
@@ -174,7 +189,7 @@ namespace Hotel_Booking_API
                     ClockSkew = TimeSpan.Zero // No clock skew for strict token validation
                 };
 
-                // تخصيص الرد عند الخطأ
+                // ????? ???? ??? ?????
                 options.Events = new JwtBearerEvents
                 {
                     OnChallenge = context =>
@@ -199,7 +214,7 @@ namespace Hotel_Booking_API
                         var path = context.Request.Path.Value?.ToLower();
                         string message;
 
-                        // تخصيص الرسائل حسب الـ endpoint
+                        // ????? ??????? ??? ??? endpoint
                         if (path.Contains("/bookings"))
                         {
                             message = "Only Admins and Customers can perform this action.";
@@ -310,8 +325,34 @@ namespace Hotel_Booking_API
             // Redirect HTTP to HTTPS for security
             app.UseHttpsRedirection();
 
+            // Serilog request logging
+            app.UseSerilogRequestLogging();
+
+            // Correlation ID
+            app.Use(async (context, next) =>
+            {
+                const string headerName = "X-Correlation-ID";
+                if (!context.Request.Headers.TryGetValue(headerName, out var correlationId) || string.IsNullOrWhiteSpace(correlationId))
+                {
+                    correlationId = Guid.NewGuid().ToString();
+                    context.Request.Headers[headerName] = correlationId;
+                }
+                context.Response.Headers[headerName] = correlationId!
+                    .ToString();
+                await next();
+            });
+
             // Enable CORS with the configured policy
             app.UseCors("AllowSpecificOrigins");
+
+            // Response compression
+            app.UseResponseCompression();
+
+            // Rate limiting
+            app.UseRateLimiter();
+
+            // Output cache
+            app.UseOutputCache();
 
             // Add authentication and authorization middleware
             // Note: Order is important - Authentication must come before Authorization
@@ -321,12 +362,18 @@ namespace Hotel_Booking_API
             // Map controller routes
             app.MapControllers();
 
-            // Ensure database is created (for development)
-            // In production, use migrations instead
+            // Health checks
+            app.MapHealthChecks("/health");
+
+            // Apply migrations in Development only
             using (var scope = app.Services.CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                context.Database.EnsureCreated();
+                var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
+                if (env.IsDevelopment())
+                {
+                    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    context.Database.Migrate();
+                }
             }
         }
     }

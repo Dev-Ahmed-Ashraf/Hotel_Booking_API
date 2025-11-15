@@ -1,7 +1,7 @@
 using FluentValidation;
 using Hotel_Booking_API.Application.DTOs;
 
-namespace Hotel_Booking.Application.Validators.AuthValidators
+namespace Hotel_Booking_API.Application.Validators.AuthValidators
 {
     public class LoginUserValidator : AbstractValidator<LoginDto>
     {

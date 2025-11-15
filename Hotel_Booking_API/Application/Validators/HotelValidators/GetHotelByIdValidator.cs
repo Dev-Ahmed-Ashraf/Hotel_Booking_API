@@ -1,7 +1,7 @@
-﻿using FluentValidation;
-using Hotel_Booking.Application.Features.Hotels.Queries.GetHotelById;
+using FluentValidation;
+using Hotel_Booking_API.Application.Features.Hotels.Queries.GetHotelById;
 
-namespace Hotel_Booking.Application.Validators.HotelValidators
+namespace Hotel_Booking_API.Application.Validators.HotelValidators
 {
     public class GetHotelByIdValidator : AbstractValidator<GetHotelByIdQuery>
     {

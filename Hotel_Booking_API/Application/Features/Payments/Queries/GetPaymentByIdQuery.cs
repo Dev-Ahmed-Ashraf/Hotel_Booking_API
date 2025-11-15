@@ -1,6 +1,5 @@
 using AutoMapper;
 using Hotel_Booking_API.Application.DTOs;
-using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
 

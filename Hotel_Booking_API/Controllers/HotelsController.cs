@@ -1,17 +1,17 @@
-ï»¿using Hotel_Booking.Application.Features.Hotels.Commands.UpdateHotel;
-using Hotel_Booking.Application.Features.Hotels.Queries.GetHotelById;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Interfaces;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Application.Features.Hotels.Commands.CreateHotel;
 using Hotel_Booking_API.Application.Features.Hotels.Commands.DeleteHotel;
+using Hotel_Booking_API.Application.Features.Hotels.Commands.UpdateHotel;
+using Hotel_Booking_API.Application.Features.Hotels.Queries.GetHotelById;
 using Hotel_Booking_API.Application.Features.Hotels.Queries.GetHotels;
 using Hotel_Booking_API.Domain.Enums;
+using Hotel_Booking_API.Infrastructure.Caching;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using Hotel_Booking_API.Application.Common.Interfaces;
-using Hotel_Booking_API.Infrastructure.Caching;
 
 namespace Hotel_Booking_API.Controllers
 {
@@ -23,6 +23,7 @@ namespace Hotel_Booking_API.Controllers
     [Route("api/[controller]")]
     public class HotelsController : ControllerBase
     {
+        #region Fields & Constructor
         private readonly IMediator _mediator;
         private readonly ICacheInvalidator _cacheInvalidator;
 
@@ -31,7 +32,9 @@ namespace Hotel_Booking_API.Controllers
             _mediator = mediator;
             _cacheInvalidator = cacheInvalidator;
         }
+        #endregion
 
+        #region Get Endpoints
         /// <summary>
         /// Retrieves a paginated list of hotels with optional filtering by city, country, or rating.
         /// </summary>
@@ -47,8 +50,6 @@ namespace Hotel_Booking_API.Controllers
         /// </returns>
         /// <remarks>
         /// Supports comprehensive filtering and pagination with validation.  
-        /// Example request:  
-        /// `GET /api/hotels?pageNumber=1&pageSize=10&city=Cairo&minRating=3`
         /// </remarks>
         /// <response code="200">List of hotels retrieved successfully.</response>
         /// <response code="400">Invalid filter or pagination parameters.</response>
@@ -78,39 +79,8 @@ namespace Hotel_Booking_API.Controllers
                 Search = search,
                 IncludeDeleted = includeDeleted
             };
-
             var result = await _mediator.Send(query);
             return Ok(result);
-        }
-
-
-        /// <summary>
-        /// Creates a new hotel in the system.
-        /// </summary>
-        /// <param name="createHotelDto">
-        /// The hotel details to create, including name, description, address, city, country, and rating.
-        /// </param>
-        /// <returns>
-        /// Returns the created hotel details wrapped in an <see cref="ApiResponse{HotelDto}"/> object.
-        /// </returns>
-        /// <remarks>
-        /// Requires **Admin** role authorization.  
-        /// The API will return a `201 Created` response with the location of the new hotel.
-        /// </remarks>
-        /// <response code="201">Hotel created successfully.</response>
-        /// <response code="400">Validation failed â€” one or more fields are invalid.</response>
-        /// <response code="401">Unauthorized â€” the request requires admin privileges.</response>
-        [HttpPost]
-        [Authorize(Roles = nameof(UserRole.Admin))]
-        [ProducesResponseType(typeof(ApiResponse<HotelDto>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ApiResponse<HotelDto>), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<ApiResponse<HotelDto>>> CreateHotel([FromBody] CreateHotelDto createHotelDto)
-        {
-            var command = new CreateHotelCommand { CreateHotelDto = createHotelDto };
-            var result = await _mediator.Send(command);
-            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Hotels.Prefix);
-            return CreatedAtAction(nameof(GetHotels), new { id = result.Data?.Id }, result);
         }
 
         /// <summary>
@@ -138,8 +108,42 @@ namespace Hotel_Booking_API.Controllers
 
             return Ok(result);
         }
+        #endregion
 
+        #region Post Endpoits
+        /// <summary>
+        /// Creates a new hotel in the system.
+        /// </summary>
+        /// <param name="createHotelDto">
+        /// The hotel details to create, including name, description, address, city, country, and rating.
+        /// </param>
+        /// <returns>
+        /// Returns the created hotel details wrapped in an <see cref="ApiResponse{HotelDto}"/> object.
+        /// </returns>
+        /// <remarks>
+        /// Requires **Admin** role authorization.  
+        /// The API will return a `201 Created` response with the location of the new hotel.
+        /// </remarks>
+        /// <response code="201">Hotel created successfully.</response>
+        /// <response code="400">Validation failed — one or more fields are invalid.</response>
+        /// <response code="401">Unauthorized — the request requires admin privileges.</response>
+        [HttpPost]
+        [Authorize(Roles = nameof(UserRole.Admin))]
+        [ProducesResponseType(typeof(ApiResponse<HotelDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse<HotelDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<HotelDto>>> CreateHotel([FromBody] CreateHotelDto createHotelDto)
+        {
+            var command = new CreateHotelCommand { CreateHotelDto = createHotelDto };
+            var result = await _mediator.Send(command);
 
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Hotels.Prefix);
+
+            return CreatedAtAction(nameof(GetHotels), new { id = result.Data?.Id }, result);
+        }
+        #endregion
+
+        #region Patch Endpoints
         /// <summary>
         /// Updates specific hotel details.
         /// </summary>
@@ -157,9 +161,9 @@ namespace Hotel_Booking_API.Controllers
         /// Hotel name must remain unique if changed.
         /// </remarks>
         /// <response code="200">Hotel updated successfully.</response>
-        /// <response code="400">Validation failed â€” one or more fields are invalid.</response>
+        /// <response code="400">Validation failed — one or more fields are invalid.</response>
         /// <response code="404">Hotel not found.</response>
-        /// <response code="401">Unauthorized â€” the request requires admin or hotel manager privileges.</response>
+        /// <response code="401">Unauthorized — the request requires admin or hotel manager privileges.</response>
         [HttpPatch("{id}")]
         [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
         [ProducesResponseType(typeof(ApiResponse<HotelDto>), StatusCodes.Status200OK)]
@@ -178,36 +182,49 @@ namespace Hotel_Booking_API.Controllers
             await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Hotels.Prefix);
             return Ok(result);
         }
+        #endregion
 
-
+        #region Delete Endpoints
         /// <summary>
         /// Deletes a hotel by ID.
         /// </summary>
         /// <param name="id">Hotel ID to delete</param>
-        /// <param name="isSoft">If true, marks the hotel as deleted instead of removing it permanently (default: true)</param>
-        /// <param name="forceDelete">If true, forces deletion even if hotel has active bookings (default: false)</param>
-        /// <returns>204 No Content if successful, 404 if not found</returns>
+        /// <param name="isSoft">Soft delete (default: true)</param>
+        /// <param name="forceDelete">Skip active booking checks (default: false)</param>
+        /// <returns>Returns a success message</returns>
         /// <remarks>
-        /// Requires **Admin** role authorization.  
-        /// By default, performs soft delete to maintain data integrity.
-        /// Cannot delete hotels with active bookings unless forceDelete is true.
+        /// Requires **Admin** role.  
+        /// Soft delete preferred to maintain data integrity.
         /// </remarks>
-        /// <response code="204">Hotel deleted successfully.</response>
-        /// <response code="404">Hotel not found.</response>
+        /// <response code="200">Hotel deleted successfully.</response>
         /// <response code="400">Cannot delete hotel with active bookings.</response>
-        /// <response code="401">Unauthorized â€” the request requires admin privileges.</response>
+        /// <response code="404">Hotel not found.</response>
+        /// <response code="401">Unauthorized – Admin only.</response>
         [HttpDelete("{id}")]
         [Authorize(Roles = nameof(UserRole.Admin))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> DeleteHotel([FromRoute, Range(1, int.MaxValue)] int id, [FromQuery] bool isSoft = true, [FromQuery] bool forceDelete = false)
+        public async Task<IActionResult> DeleteHotel(
+            [FromRoute, Range(1, int.MaxValue)] int id,
+            [FromQuery] bool isSoft = true,
+            [FromQuery] bool forceDelete = false)
         {
-            var command = new DeleteHotelCommand { Id = id, IsSoft = isSoft, ForceDelete = forceDelete };
+            var command = new DeleteHotelCommand
+            {
+                Id = id,
+                IsSoft = isSoft,
+                ForceDelete = forceDelete
+            };
+
             var result = await _mediator.Send(command);
+
             await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Hotels.Prefix);
-            return NoContent();
+
+            return Ok(result);
         }
+
+        #endregion
     }
 }

@@ -1,12 +1,12 @@
+using Hotel_Booking_API.Application.Common.Interfaces;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Enums;
 using Hotel_Booking_API.Domain.Interfaces;
+using Hotel_Booking_API.Infrastructure.Caching;
 using Hotel_Booking_API.Infrastructure.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using Hotel_Booking_API.Application.Common.Interfaces;
-using Hotel_Booking_API.Infrastructure.Caching;
 
 namespace Hotel_Booking_API.Application.Features.AdminDashboard.Queries
 {
@@ -40,12 +40,12 @@ namespace Hotel_Booking_API.Application.Features.AdminDashboard.Queries
             // ========== USER STATS ==========
             var totalUsers = await _unitOfWork.Users.CountAsync();
             var newUsersLast30Days = await _unitOfWork.Users.CountAsync(u => u.CreatedAt >= last30Days);
-            var newUsersPrevious30Days = await _unitOfWork.Users.CountAsync(u => 
+            var newUsersPrevious30Days = await _unitOfWork.Users.CountAsync(u =>
                 u.CreatedAt >= previous30DaysStart && u.CreatedAt < previous30DaysEnd);
-            
-            var userGrowthRate = newUsersPrevious30Days == 0 
-                ? (newUsersLast30Days > 0 ? 100.0 : 0.0) 
-                : ((newUsersLast30Days - newUsersPrevious30Days) / (double)newUsersPrevious30Days) * 100.0;
+
+            var userGrowthRate = newUsersPrevious30Days == 0
+                ? (newUsersLast30Days > 0 ? 100.0 : 0.0)
+                : (newUsersLast30Days - newUsersPrevious30Days) / (double)newUsersPrevious30Days * 100.0;
 
             var userStats = new UserStatsDto
             {
@@ -57,11 +57,11 @@ namespace Hotel_Booking_API.Application.Features.AdminDashboard.Queries
             // ========== HOTEL STATS ==========
             var totalHotels = await _unitOfWork.Hotels.CountAsync();
             var newHotelsLast30Days = await _unitOfWork.Hotels.CountAsync(h => h.CreatedAt >= last30Days);
-            
+
             // Average hotel rating from reviews
             var allReviews = await _unitOfWork.Reviews.GetAllAsync();
-            var averageRating = allReviews.Any() 
-                ? allReviews.Average(r => r.Rating) 
+            var averageRating = allReviews.Any()
+                ? allReviews.Average(r => r.Rating)
                 : 0.0;
 
             // Top 3 hotels by booking count
@@ -87,12 +87,12 @@ namespace Hotel_Booking_API.Application.Features.AdminDashboard.Queries
 
             // ========== ROOM STATS ==========
             var totalRooms = await _unitOfWork.Rooms.CountAsync();
-            
+
             // Count rooms currently occupied (booked with status Confirmed or Pending where today is between CheckInDate and CheckOutDate)
             var occupiedRoomsQuery = await _context.Bookings
-                .Where(b => !b.IsDeleted && 
+                .Where(b => !b.IsDeleted &&
                            (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Pending) &&
-                           b.CheckInDate <= today && 
+                           b.CheckInDate <= today &&
                            b.CheckOutDate >= today)
                 .Select(b => b.RoomId)
                 .Distinct()
@@ -100,7 +100,7 @@ namespace Hotel_Booking_API.Application.Features.AdminDashboard.Queries
 
             var bookedRooms = occupiedRoomsQuery;
             var availableRooms = totalRooms - bookedRooms;
-            var occupancyRate = totalRooms == 0 ? 0.0 : (bookedRooms / (double)totalRooms) * 100.0;
+            var occupancyRate = totalRooms == 0 ? 0.0 : bookedRooms / (double)totalRooms * 100.0;
 
             var roomStats = new RoomStatsDto
             {
@@ -116,10 +116,10 @@ namespace Hotel_Booking_API.Application.Features.AdminDashboard.Queries
                 b => b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed);
             var cancelledBookings = await _unitOfWork.Bookings.CountAsync(b => b.Status == BookingStatus.Cancelled);
             var bookingsLast7Days = await _unitOfWork.Bookings.CountAsync(b => b.CreatedAt >= last7Days);
-            
-            var cancellationRate = totalBookings == 0 
-                ? 0.0 
-                : (cancelledBookings / (double)totalBookings) * 100.0;
+
+            var cancellationRate = totalBookings == 0
+                ? 0.0
+                : cancelledBookings / (double)totalBookings * 100.0;
 
             // Average stay duration
             var allBookings = await _unitOfWork.Bookings.GetAllAsync();
@@ -142,17 +142,17 @@ namespace Hotel_Booking_API.Application.Features.AdminDashboard.Queries
             var totalRevenue = allPayments
                 .Where(p => p.Status == PaymentStatus.Completed)
                 .Sum(p => (double)p.Amount);
-            
+
             var monthlyRevenue = allPayments
-                .Where(p => p.Status == PaymentStatus.Completed && 
+                .Where(p => p.Status == PaymentStatus.Completed &&
                            p.CreatedAt >= last30Days)
                 .Sum(p => (double)p.Amount);
 
             var totalPayments = allPayments.Count();
             var completedPayments = allPayments.Count(p => p.Status == PaymentStatus.Completed);
-            var successRate = totalPayments == 0 
-                ? 0.0 
-                : (completedPayments / (double)totalPayments) * 100.0;
+            var successRate = totalPayments == 0
+                ? 0.0
+                : completedPayments / (double)totalPayments * 100.0;
 
             var pendingPayments = allPayments.Count(p => p.Status == PaymentStatus.Pending);
             var failedPayments = allPayments.Count(p => p.Status == PaymentStatus.Failed);

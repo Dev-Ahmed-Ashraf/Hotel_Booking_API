@@ -1,4 +1,3 @@
-using Hotel_Booking.Domain.Interfaces;
 using Hotel_Booking_API.Domain.Entities;
 
 namespace Hotel_Booking_API.Domain.Interfaces
@@ -7,12 +6,11 @@ namespace Hotel_Booking_API.Domain.Interfaces
     {
         IRepository<User> Users { get; }
         IRepository<Hotel> Hotels { get; }
-        IRepository<Room> Rooms { get; }
         IRepository<Booking> Bookings { get; }
         IRepository<Review> Reviews { get; }
         IRepository<Payment> Payments { get; }
-        
-        IRoomRepository RoomRepository { get; }
+
+        IRoomRepository Rooms { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task BeginTransactionAsync();

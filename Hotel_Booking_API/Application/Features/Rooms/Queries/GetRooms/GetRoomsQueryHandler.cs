@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Entities;
@@ -24,106 +25,76 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Queries.GetRooms
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the get rooms query by applying filters and pagination.
-        /// All validation is handled by the GetRoomsValidator through the MediatR pipeline.
-        /// </summary>
-        /// <param name="request">The query containing pagination and search parameters</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing paginated list of rooms or error message</returns>
         public async Task<ApiResponse<PagedList<RoomDto>>> Handle(GetRoomsQuery request, CancellationToken cancellationToken)
         {
-            Log.Information("Starting {HandlerName} with request {@Request}", nameof(GetRoomsQueryHandler), request);
+            Log.Information("Starting {Handler} with request {@Request}", nameof(GetRoomsQueryHandler), request);
 
             try
             {
-                // Start with base query including hotel information
                 IQueryable<Room> query = _context.Rooms
-                .IgnoreQueryFilters()
-                .Include(r => r.Hotel)
-                .AsNoTracking()
-                .AsQueryable();
+                    .IgnoreQueryFilters()                  .AsNoTracking()
+                    .Include(r => r.Hotel)
+                    .AsQueryable();
 
-            // Filter out soft-deleted rooms unless explicitly requested
-            if (!request.IncludeDeleted)
-                query = query.Where(r => !r.IsDeleted);
+                // Exclude soft deleted rooms unless explicitly included
+                if (!request.IncludeDeleted)
+                    query = query.Where(r => !r.IsDeleted);
 
-            // Apply search filters if provided
-            if (request.Search is not null)
-            {
-                var search = request.Search;
+                // Exclude rooms of deleted hotels
+                query = query.Where(r => r.Hotel != null && !r.Hotel.IsDeleted);
 
-                // Filter by hotel ID
-                if (search.HotelId.HasValue)
-                    query = query.Where(r => r.HotelId == search.HotelId.Value);
-
-                // Filter by room type
-                if (search.Type.HasValue)
-                    query = query.Where(r => r.Type == search.Type.Value);
-
-                // Filter by availability
-                //if (search.IsAvailable.HasValue)
-                //    query = query.Where(r => r.IsAvailable == search.IsAvailable.Value);
-
-                // Filter by price range
-                if (search.MinPrice.HasValue)
-                    query = query.Where(r => r.Price >= search.MinPrice.Value);
-
-                if (search.MaxPrice.HasValue)
-                    query = query.Where(r => r.Price <= search.MaxPrice.Value);
-
-                // Filter by capacity
-                if (search.Capacity.HasValue)
-                    query = query.Where(r => r.Capacity >= search.Capacity.Value);
-
-                // Filter by hotel name (case-insensitive partial match)
-                if (!string.IsNullOrWhiteSpace(search.HotelName))
-                    query = query.Where(r => r.Hotel.Name.Contains(search.HotelName));
-
-                // Filter by room number (case-insensitive partial match)
-                if (!string.IsNullOrWhiteSpace(search.RoomNumber))
-                    query = query.Where(r => r.RoomNumber.Contains(search.RoomNumber));
-            }
-
-            // Get total count for pagination
-            var totalCount = await query.CountAsync(cancellationToken);
-
-            // Apply pagination and ordering
-            var rooms = await query
-                .OrderByDescending(r => r.CreatedAt)
-                .Skip((request.Pagination.PageNumber - 1) * request.Pagination.PageSize)
-                .Take(request.Pagination.PageSize)
-                .Select(r => new RoomDto
+                // Apply filters
+                if (request.Search is not null)
                 {
-                    Id = r.Id,
-                    HotelId = r.HotelId,
-                    HotelName = r.Hotel.Name,
-                    RoomNumber = r.RoomNumber,
-                    Type = r.Type,
-                    Price = r.Price,
-                    //IsAvailable = r.IsAvailable,
-                    Capacity = r.Capacity,
-                    Description = r.Description,
-                    CreatedAt = r.CreatedAt
-                })
-                .ToListAsync(cancellationToken);
+                    var s = request.Search;
 
-            // Create paginated result
-            var pagedList = new PagedList<RoomDto>(
-                rooms,
-                request.Pagination.PageNumber,
-                request.Pagination.PageSize,
-                totalCount
-            );
+                    if (s.HotelId.HasValue)
+                        query = query.Where(r => r.HotelId == s.HotelId.Value);
 
-                Log.Information("Rooms retrieved successfully: {TotalCount} rooms found for page {PageNumber}", totalCount, request.Pagination.PageNumber);
-                Log.Information("Completed {HandlerName} successfully", nameof(GetRoomsQueryHandler));
+                    if (s.Type.HasValue)
+                        query = query.Where(r => r.Type == s.Type.Value);
+
+                    if (s.MinPrice.HasValue)
+                        query = query.Where(r => r.Price >= s.MinPrice.Value);
+
+                    if (s.MaxPrice.HasValue)
+                        query = query.Where(r => r.Price <= s.MaxPrice.Value);
+
+                    if (s.Capacity.HasValue)
+                        query = query.Where(r => r.Capacity >= s.Capacity.Value);
+
+                    if (!string.IsNullOrWhiteSpace(s.HotelName))
+                        query = query.Where(r =>
+                            EF.Functions.Like(r.Hotel.Name, $"%{s.HotelName}%"));
+
+                    if (!string.IsNullOrWhiteSpace(s.RoomNumber))
+                        query = query.Where(r =>
+                            EF.Functions.Like(r.RoomNumber, $"%{s.RoomNumber}%"));
+                }
+
+                var totalCount = await query.CountAsync(cancellationToken);
+
+                var rooms = await query
+                    .OrderByDescending(r => r.Id)
+                    .Skip((request.Pagination.PageNumber - 1) * request.Pagination.PageSize)
+                    .Take(request.Pagination.PageSize)
+                    .ProjectTo<RoomDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync(cancellationToken);
+
+                var pagedList = new PagedList<RoomDto>(
+                    rooms,
+                    request.Pagination.PageNumber,
+                    request.Pagination.PageSize,
+                    totalCount
+                    );
+
+                Log.Information("Rooms retrieved successfully: {TotalCount} Rooms found for page {PageNumber}", totalCount, request.Pagination.PageNumber);
 
                 return ApiResponse<PagedList<RoomDto>>.SuccessResponse(pagedList, "Rooms retrieved successfully");
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error while processing {HandlerName}", nameof(GetRoomsQueryHandler));
+                Log.Error(ex, "Error in {Handler}", nameof(GetRoomsQueryHandler));
                 throw;
             }
         }

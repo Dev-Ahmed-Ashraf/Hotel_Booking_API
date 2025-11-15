@@ -1,5 +1,3 @@
-using System;
-
 namespace Hotel_Booking_API.Infrastructure.Caching
 {
     public static class CacheKeys

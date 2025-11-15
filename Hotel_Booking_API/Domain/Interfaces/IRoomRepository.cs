@@ -1,9 +1,8 @@
-﻿using Hotel_Booking_API.Domain.Entities;
-using Hotel_Booking_API.Domain.Interfaces;
+using Hotel_Booking_API.Domain.Entities;
 
-namespace Hotel_Booking.Domain.Interfaces
+namespace Hotel_Booking_API.Domain.Interfaces
 {
-    public interface IRoomRepository
+    public interface IRoomRepository : IRepository<Room>
     {
         Task<bool> IsRoomAvailableAsync(int roomId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default);
     }

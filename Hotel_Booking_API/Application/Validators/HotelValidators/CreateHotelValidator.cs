@@ -1,5 +1,4 @@
 using FluentValidation;
-using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Application.Features.Hotels.Commands.CreateHotel;
 
 namespace Hotel_Booking_API.Application.Validators.HotelValidators

@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Hotel_Booking_API.Domain.Entities;
+using AutoMapper;
 using Hotel_Booking_API.Application.DTOs;
+using Hotel_Booking_API.Domain.Entities;
 
 namespace Hotel_Booking_API.Application.Mappings
 {
@@ -34,9 +34,9 @@ namespace Hotel_Booking_API.Application.Mappings
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-            // علشان نعمل Partial Mapping بس على الحقول اللي مش null 
+                // Partial Mapping for Partial Updates
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
-
+            
             // Room mappings
             CreateMap<Room, RoomDto>()
                 .ForMember(dest => dest.HotelName, opt => opt.MapFrom(src => src.Hotel.Name));

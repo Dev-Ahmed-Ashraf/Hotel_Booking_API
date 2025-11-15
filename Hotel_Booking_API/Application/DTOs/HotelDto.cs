@@ -10,8 +10,6 @@ namespace Hotel_Booking_API.Application.DTOs
         public string Country { get; set; } = string.Empty;
         public decimal Rating { get; set; }
         public DateTime CreatedAt { get; set; }
-        public int TotalRooms { get; set; }
-        public int AvailableRooms { get; set; }
         public bool IsDeleted { get; set; }
         public List<RoomDto> Rooms { get; set; } = new();
     }

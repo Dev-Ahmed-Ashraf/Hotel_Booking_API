@@ -1,4 +1,5 @@
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Interfaces;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Application.Features.Bookings.Commands.CancelBooking;
 using Hotel_Booking_API.Application.Features.Bookings.Commands.ChangeBookingStatus;
@@ -12,13 +13,11 @@ using Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookings;
 using Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByHotel;
 using Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByUser;
 using Hotel_Booking_API.Domain.Enums;
+using Hotel_Booking_API.Infrastructure.Caching;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
-using Hotel_Booking_API.Application.Common.Interfaces;
-using Hotel_Booking_API.Infrastructure.Caching;
 
 namespace Hotel_Booking_API.Controllers
 {
@@ -248,7 +247,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="404">Booking not found.</response>
         /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
         [HttpPost("{id}/cancel")]
-        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        //[Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status404NotFound)]

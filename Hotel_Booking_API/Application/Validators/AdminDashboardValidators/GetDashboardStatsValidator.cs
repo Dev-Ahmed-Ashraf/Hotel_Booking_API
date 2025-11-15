@@ -1,7 +1,7 @@
 using FluentValidation;
 using Hotel_Booking_API.Application.Features.AdminDashboard.Queries;
 
-namespace Hotel_Booking.Application.Validators.AdminDashboardValidators
+namespace Hotel_Booking_API.Application.Validators.AdminDashboardValidators
 {
     public class GetDashboardStatsValidator : AbstractValidator<GetDashboardStatsQuery>
     {

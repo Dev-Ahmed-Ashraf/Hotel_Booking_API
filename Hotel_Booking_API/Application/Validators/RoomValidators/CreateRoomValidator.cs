@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Hotel_Booking_API.Application.DTOs;
+using FluentValidation;
 using Hotel_Booking_API.Application.Features.Rooms.Commands.CreateRoom;
 using Hotel_Booking_API.Domain.Enums;
 

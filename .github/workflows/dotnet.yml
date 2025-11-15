@@ -1,0 +1,69 @@
+name: .NET CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore "Hotel_Booking_API/Hotel_Booking.csproj"
+
+      - name: Build
+        run: dotnet build "Hotel_Booking_API/Hotel_Booking.csproj" --configuration Release --no-restore
+
+      - name: Test
+        run: |
+          if (Test-Path "tests") { dotnet test tests --configuration Release --no-build --collect:"XPlat Code Coverage" } else { echo "No tests directory found, skipping tests." }
+        shell: pwsh
+
+      - name: Publish
+        run: dotnet publish "Hotel_Booking_API/Hotel_Booking.csproj" -c Release -o out
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hotel-booking-api
+          path: out
+
+docker_deploy:
+  runs-on: ubuntu-latest
+  needs: build
+
+  steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build Docker Image
+      run: |
+        docker build \
+          --build-arg JwtSettings__SecretKey="${{ secrets.JwtSettings__SecretKey }}" \
+          --build-arg Stripe__ApiKey="${{ secrets.Stripe__ApiKey }}" \
+          --build-arg Stripe__PublishableKey="${{ secrets.Stripe__PublishableKey }}" \
+          --build-arg Stripe__WebhookSecret="${{ secrets.Stripe__WebhookSecret }}" \
+          --build-arg SmtpSettings__Username="${{ secrets.SmtpSettings__Username }}" \
+          --build-arg SmtpSettings__Password="${{ secrets.SmtpSettings__Password }}" \
+          -t ${{ secrets.DOCKERHUB_USERNAME }}/hotel-booking-api:latest \
+          ./Hotel_Booking_API
+
+    - name: Push Docker Image to Docker Hub
+      run: |
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/hotel-booking-api:latest

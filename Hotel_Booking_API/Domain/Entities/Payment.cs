@@ -10,7 +10,7 @@ namespace Hotel_Booking_API.Domain.Entities
         public PaymentMethod PaymentMethod { get; set; }
         public string TransactionId { get; set; } = string.Empty;
         public DateTime? PaidAt { get; set; }
-        
+
         // Navigation properties
         public virtual Booking Booking { get; set; } = null!;
     }

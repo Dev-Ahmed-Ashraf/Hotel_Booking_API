@@ -23,12 +23,6 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Queries.GetRoomById
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the get room by ID query by retrieving the room with hotel information.
-        /// </summary>
-        /// <param name="request">The query containing the room ID</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing the room details or error message</returns>
         public async Task<ApiResponse<RoomDto>> Handle(GetRoomByIdQuery request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(GetRoomByIdQueryHandler), request);
@@ -40,7 +34,7 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Queries.GetRoomById
                 request.Id,
                 cancellationToken,
                 r => r.Hotel
-            );
+                );
 
                 // Check if room exists and is not deleted
                 if (room == null || room.IsDeleted)
@@ -51,10 +45,8 @@ namespace Hotel_Booking_API.Application.Features.Rooms.Queries.GetRoomById
 
                 // Map entity to DTO for response
                 var roomDto = _mapper.Map<RoomDto>(room);
-                roomDto.HotelName = room.Hotel.Name; // Ensure hotel name is included
 
                 Log.Information("Room retrieved successfully with ID {RoomId} and number {RoomNumber} in hotel {HotelId}", room.Id, room.RoomNumber, room.HotelId);
-                Log.Information("Completed {HandlerName} successfully", nameof(GetRoomByIdQueryHandler));
 
                 return ApiResponse<RoomDto>.SuccessResponse(roomDto, "Room retrieved successfully.");
             }

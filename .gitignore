@@ -1,92 +1,85 @@
-# .NET Core
+##############################
+# .NET BUILD ARTIFACTS
+##############################
 bin/
 obj/
-.vs/
-.vscode/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
-
-# User-specific files
-*.rsuser
-*.userprefs
-
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
+[Bb]in/
+[Oo]bj/
+bld/
+[Dd]ebug*/
+[Rr]elease*/
 x64/
 x86/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
+[Aa][Rr][Mm]*/
+[Aa][Rr][Mm]64*/
 
-# IDE specific files
+##############################
+# IDE / USER SETTINGS
+##############################
+.vs/
+.vscode/
 .idea/
+*.user
+*.suo
+*.rsuser
+*.userprefs
 *.sln.iml
+*.sln.docstates
+
+##############################
+# LOGS & TEMP
+##############################
+logs/
+**/logs/
+*.log
+*.cache
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+##############################
+# SECRETS (DO NOT COMMIT)
+##############################
+# Common appsettings files containing secrets
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/appsettings.*.local.json
+
+# Environment files
+.env
+*.local.settings.json
+
+##############################
+# DOCKER
+##############################
+# Ignore Docker local volumes & env files
+docker-compose.override.yml
+docker-compose.local.yml
+.dockerignore
+
+##############################
+# SQL FILES
+##############################
+*.mdf
+*.ldf
+*.ndf
+
+##############################
+# MISC
+##############################
+ClientBin/
+~$*
+*.jfm
+*.pfx
+*.publishsettings
+orleans.codegen.cs
 
 # ReSharper
 _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
 
-# Local development settings
-appsettings.Development.json
-appsettings.Production.json
-appsettings*.json
-
-# Logs
-logs/
-*.log
-
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# Local development settings (user specific)
-*.userprefs
-
-# Build results
-bld/
-[Bb]in/
-[Oo]bj/
-
-# MSTest test Results
-[Tt]est[Rr]esult*/
-[Bb]uild[Ll]og.*
-
-# Local development files
-*.local.settings.json
-
-# SQL Server files
-*.mdf
-*.ldf
-*.ndf
-
-# Visual Studio cache files
-# files ending in .cache can be ignored
-*.[Cc]ache
-
-# Others
-ClientBin/
-~$*
-*.dbmdl
-*.dbproj.schemaview
-*.jfm
-*.pfx
-*.publishsettings
-orleans.codegen.cs
-
-# Backup folder for Package Reference Convert tool in Visual Studio 2017
-MigrationBackup/
-
-# Ionide (cross platform F# VS Code tools) working folder
-.ionide/
-
-# Fody - auto-generated XML schema
-FodyWeavers.xsd
+# Fody
 FodyWeavers.xsd

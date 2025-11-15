@@ -1,10 +1,10 @@
-using MediatR;
 using AutoMapper;
-using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.Common.Exceptions;
+using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Interfaces;
 using Hotel_Booking_API.Infrastructure.Services;
+using MediatR;
 
 namespace Hotel_Booking_API.Application.Features.Authentication.Commands.LoginUser
 {

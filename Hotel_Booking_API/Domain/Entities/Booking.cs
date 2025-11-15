@@ -10,7 +10,7 @@ namespace Hotel_Booking_API.Domain.Entities
         public DateTime CheckOutDate { get; set; }
         public decimal TotalPrice { get; set; }
         public BookingStatus Status { get; set; } = BookingStatus.Pending;
-        
+
         // Navigation properties
         public virtual User User { get; set; } = null!;
         public virtual Room Room { get; set; } = null!;

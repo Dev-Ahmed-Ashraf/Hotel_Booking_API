@@ -1,5 +1,5 @@
-using System.Linq.Expressions;
 using Hotel_Booking_API.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Hotel_Booking_API.Domain.Interfaces
 {

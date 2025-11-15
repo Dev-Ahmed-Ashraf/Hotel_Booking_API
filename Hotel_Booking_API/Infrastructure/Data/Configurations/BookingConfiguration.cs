@@ -1,6 +1,6 @@
+using Hotel_Booking_API.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Hotel_Booking_API.Domain.Entities;
 
 namespace Hotel_Booking_API.Infrastructure.Data.Configurations
 {
@@ -9,16 +9,16 @@ namespace Hotel_Booking_API.Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<Booking> builder)
         {
             builder.HasKey(b => b.Id);
-            
+
             builder.Property(b => b.CheckInDate)
                 .IsRequired();
-                
+
             builder.Property(b => b.CheckOutDate)
                 .IsRequired();
-                
+
             builder.Property(b => b.TotalPrice)
                 .HasPrecision(10, 2);
-                
+
             builder.Property(b => b.Status)
                 .IsRequired()
                 .HasConversion<int>();

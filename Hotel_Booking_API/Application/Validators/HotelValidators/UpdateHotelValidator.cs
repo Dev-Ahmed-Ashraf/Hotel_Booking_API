@@ -1,5 +1,5 @@
-﻿using FluentValidation;
-using Hotel_Booking.Application.Features.Hotels.Commands.UpdateHotel;
+using FluentValidation;
+using Hotel_Booking_API.Application.Features.Hotels.Commands.UpdateHotel;
 
 namespace Hotel_Booking_API.Application.Validators.HotelValidators
 {
@@ -9,7 +9,7 @@ namespace Hotel_Booking_API.Application.Validators.HotelValidators
     /// </summary>
     public class UpdateHotelValidator : AbstractValidator<UpdateHotelCommand>
     {
-        public UpdateHotelValidator() 
+        public UpdateHotelValidator()
         {
             // Validate hotel ID
             RuleFor(x => x.Id)

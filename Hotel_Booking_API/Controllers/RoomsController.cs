@@ -1,5 +1,5 @@
-﻿using Azure;
 using Hotel_Booking_API.Application.Common;
+using Hotel_Booking_API.Application.Common.Interfaces;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Application.Features.Rooms.Commands.CreateRoom;
 using Hotel_Booking_API.Application.Features.Rooms.Commands.DeleteRoom;
@@ -8,12 +8,11 @@ using Hotel_Booking_API.Application.Features.Rooms.Queries.GetAvailableRooms;
 using Hotel_Booking_API.Application.Features.Rooms.Queries.GetRoomById;
 using Hotel_Booking_API.Application.Features.Rooms.Queries.GetRooms;
 using Hotel_Booking_API.Domain.Enums;
+using Hotel_Booking_API.Infrastructure.Caching;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using Hotel_Booking_API.Application.Common.Interfaces;
-using Hotel_Booking_API.Infrastructure.Caching;
 
 namespace Hotel_Booking_API.Controllers
 {
@@ -25,6 +24,7 @@ namespace Hotel_Booking_API.Controllers
     [Route("api/[controller]")]
     public class RoomsController : ControllerBase
     {
+        #region Fields & Constructor
         private readonly IMediator _mediator;
         private readonly ICacheInvalidator _cacheInvalidator;
 
@@ -33,7 +33,9 @@ namespace Hotel_Booking_API.Controllers
             _mediator = mediator;
             _cacheInvalidator = cacheInvalidator;
         }
+        #endregion
 
+        #region Get Endpoints
         /// <summary>
         /// Retrieves a paginated list of rooms with optional filtering.
         /// </summary>
@@ -43,7 +45,6 @@ namespace Hotel_Booking_API.Controllers
         /// <param name="hotelName">Optional filter by hotel name.</param>
         /// <param name="roomNumber">Optional filter by room number.</param>
         /// <param name="type">Optional filter by room type.</param>
-        /// <param name="isAvailable">Optional filter by availability status.</param>
         /// <param name="minPrice">Optional minimum price filter.</param>
         /// <param name="maxPrice">Optional maximum price filter.</param>
         /// <param name="capacity">Optional minimum capacity filter.</param>
@@ -53,8 +54,6 @@ namespace Hotel_Booking_API.Controllers
         /// </returns>
         /// <remarks>
         /// Supports comprehensive filtering and pagination with validation.  
-        /// Example request:  
-        /// `GET /api/rooms?pageNumber=1&pageSize=10&hotelId=1&type=Deluxe&isAvailable=true`
         /// </remarks>
         /// <response code="200">List of rooms retrieved successfully.</response>
         /// <response code="400">Invalid filter or pagination parameters.</response>
@@ -68,7 +67,6 @@ namespace Hotel_Booking_API.Controllers
             [FromQuery, StringLength(200)] string? hotelName = null,
             [FromQuery, StringLength(50)] string? roomNumber = null,
             [FromQuery] RoomType? type = null,
-            [FromQuery] bool? isAvailable = null,
             [FromQuery, Range(0, 10000)] decimal? minPrice = null,
             [FromQuery, Range(0, 10000)] decimal? maxPrice = null,
             [FromQuery, Range(1, 10)] int? capacity = null,
@@ -80,7 +78,6 @@ namespace Hotel_Booking_API.Controllers
                 HotelName = hotelName,
                 RoomNumber = roomNumber,
                 Type = type,
-                IsAvailable = isAvailable,
                 MinPrice = minPrice,
                 MaxPrice = maxPrice,
                 Capacity = capacity
@@ -124,7 +121,6 @@ namespace Hotel_Booking_API.Controllers
             return Ok(result);
         }
 
-
         /// <summary>
         /// Retrieves available rooms for a specific date range.
         /// </summary>
@@ -139,8 +135,6 @@ namespace Hotel_Booking_API.Controllers
         /// </returns>
         /// <remarks>
         /// Checks room availability by examining existing bookings and room status.
-        /// Example request:  
-        /// `GET /api/rooms/available?hotelId=1&checkInDate=2024-01-15&checkOutDate=2024-01-17&type=Deluxe`
         /// </remarks>
         /// <response code="200">Available rooms retrieved successfully.</response>
         /// <response code="400">Invalid date range or parameters.</response>
@@ -157,36 +151,49 @@ namespace Hotel_Booking_API.Controllers
         {
             // Set default dates if not provided
             if (checkInDate == default)
-                checkInDate = DateTime.Today.AddDays(1);
+                checkInDate = DateTime.Today;
             if (checkOutDate == default)
                 checkOutDate = checkInDate.AddDays(1);
 
-            // Additional validation for date range
-            if (checkInDate >= checkOutDate)
-                return BadRequest(ApiResponse<List<RoomDto>>.ErrorResponse("Check-in date must be before check-out date."));
-
-            if (checkInDate < DateTime.Today)
-                return BadRequest(ApiResponse<List<RoomDto>>.ErrorResponse("Check-in date cannot be in the past."));
-
-            var duration = checkOutDate - checkInDate;
-            if (duration.TotalDays > 30)
-                return BadRequest(ApiResponse<List<RoomDto>>.ErrorResponse("Booking duration cannot exceed 30 days."));
-
             var query = new GetAvailableRoomsQuery
             {
-                HotelId = hotelId,
-                CheckInDate = checkInDate,
-                CheckOutDate = checkOutDate,
-                Type = type,
-                MinCapacity = minCapacity,
-                MaxPrice = maxPrice
+                filter = new AvailableRoomsDto
+                {
+                    HotelId = hotelId,
+                    CheckInDate = checkInDate,
+                    CheckOutDate = checkOutDate,
+                    Type = type,
+                    MinCapacity = minCapacity,
+                    MaxPrice = maxPrice
+                }
             };
 
             var result = await _mediator.Send(query);
             return Ok(result);
         }
 
+        /// <summary>
+        /// Retrieves a list of all available room types.
+        /// </summary>
+        /// <returns>Returns a list of room types with ID and Name.</returns>
+        /// <response code="200">Room types retrieved successfully.</response>
+        [HttpGet("types")]
+        public IActionResult GetRoomTypes()
+        {
+            var types = Enum.GetValues(typeof(RoomType))
+                .Cast<RoomType>()
+                .Select(x => new
+                {
+                    Id = (int)x,
+                    Name = x.ToString()
+                })
+                .ToList();
 
+            return Ok(types);
+        }
+        #endregion
+
+        #region Post Endpoints
         /// <summary>
         /// Creates a new room in the system.
         /// </summary>
@@ -202,8 +209,8 @@ namespace Hotel_Booking_API.Controllers
         /// Room number must be unique within the hotel.
         /// </remarks>
         /// <response code="201">Room created successfully.</response>
-        /// <response code="400">Validation failed — one or more fields are invalid.</response>
-        /// <response code="401">Unauthorized — the request requires admin or hotel manager privileges.</response>
+        /// <response code="400">Validation failed � one or more fields are invalid.</response>
+        /// <response code="401">Unauthorized � the request requires admin or hotel manager privileges.</response>
         [HttpPost]
         [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
         [ProducesResponseType(typeof(ApiResponse<RoomDto>), StatusCodes.Status201Created)]
@@ -214,22 +221,6 @@ namespace Hotel_Booking_API.Controllers
             var command = new CreateRoomCommand { CreateRoomDto = createRoomDto };
             var result = await _mediator.Send(command);
             await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
-            //if (!result.Success)
-            //{
-            //    var msg = result.Message?.ToLower() ?? "";
-
-            //    if (msg.Contains("not found"))
-            //        return NotFound(result);
-
-            //    if (msg.Contains("already exists"))
-            //        return Conflict(result);
-
-            //    return BadRequest(result);
-            //}
-
-            // تأكد إن عندك Data و Id قبل ما تعمل CreatedAtAction
-            //if (result.Data == null || result.Data.Id <= 0)
-            //    return StatusCode(500, ApiResponse<RoomDto>.ErrorResponse("Invalid room data returned."));
 
             return CreatedAtAction(
                 nameof(GetRoomById),
@@ -237,8 +228,9 @@ namespace Hotel_Booking_API.Controllers
                 result
             );
         }
+        #endregion
 
-
+        #region Patch Endpoints
         /// <summary>
         /// Updates specific room details.
         /// </summary>
@@ -256,9 +248,9 @@ namespace Hotel_Booking_API.Controllers
         /// Room number must remain unique within the hotel if changed.
         /// </remarks>
         /// <response code="200">Room updated successfully.</response>
-        /// <response code="400">Validation failed — one or more fields are invalid.</response>
+        /// <response code="400">Validation failed � one or more fields are invalid.</response>
         /// <response code="404">Room not found.</response>
-        /// <response code="401">Unauthorized — the request requires admin or hotel manager privileges.</response>
+        /// <response code="401">Unauthorized � the request requires admin or hotel manager privileges.</response>
         [HttpPatch("{id}")]
         [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
         [ProducesResponseType(typeof(ApiResponse<RoomDto>), StatusCodes.Status200OK)]
@@ -277,58 +269,57 @@ namespace Hotel_Booking_API.Controllers
             await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
             return Ok(result);
         }
+        #endregion
 
-
+        #region Delete Endpoints
         /// <summary>
-        /// Deletes a room by ID.
+        /// Deletes a room by ID (soft or hard delete).
         /// </summary>
-        /// <param name="id">Room ID to delete</param>
-        /// <param name="isSoft">If true, marks the room as deleted instead of removing it permanently (default: true)</param>
-        /// <param name="forceDelete">If true, forces deletion even if room has active bookings (default: false)</param>
-        /// <returns>204 No Content if successful, 404 if not found</returns>
+        /// <param name="id">Room ID to delete.</param>
+        /// <param name="isSoft">
+        /// If true, performs a soft delete (default).  
+        /// Soft delete keeps the room in the database but marks it as deleted.
+        /// </param>
+        /// <param name="forceDelete">
+        /// If true, allows deletion even if the room has active bookings.  
+        /// Use with caution.
+        /// </param>
+        /// <returns>
+        /// Returns an ApiResponse message describing the result of deletion.
+        /// </returns>
         /// <remarks>
         /// Requires **Admin** role authorization.  
-        /// By default, performs soft delete to maintain data integrity.
-        /// Cannot delete rooms with active bookings unless forceDelete is true.
+        /// Soft delete preserves data integrity by preventing hard deletion of active rooms.
         /// </remarks>
-        /// <response code="204">Room deleted successfully.</response>
+        /// <response code="200">Room deleted (soft or hard) successfully.</response>
         /// <response code="404">Room not found.</response>
-        /// <response code="400">Cannot delete room with active bookings.</response>
-        /// <response code="401">Unauthorized — the request requires admin privileges.</response>
+        /// <response code="400">Room cannot be deleted due to active bookings.</response>
+        /// <response code="401">Unauthorized � admin privileges required.</response>
         [HttpDelete("{id}")]
         [Authorize(Roles = nameof(UserRole.Admin))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> DeleteRoom(int id, [FromQuery] bool isSoft = true, [FromQuery] bool forceDelete = false)
+        public async Task<IActionResult> DeleteRoom(
+            [FromRoute] int id,
+            [FromQuery] bool isSoft = true,
+            [FromQuery] bool forceDelete = false)
         {
-            var command = new DeleteRoomCommand 
-            { 
-                Id = id, 
+            var command = new DeleteRoomCommand
+            {
+                Id = id,
                 IsSoft = isSoft,
                 ForceDelete = forceDelete
             };
-            
+
             var result = await _mediator.Send(command);
+
+            // Invalidate cache
             await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
-            return NoContent();
+
+            return Ok(result);
         }
-
-
-        [HttpGet("types")]
-        public IActionResult GetRoomTypes()
-        {
-            var types = Enum.GetValues(typeof(RoomType))
-                .Cast<RoomType>()
-                .Select(x => new
-                {
-                    Id = (int)x,
-                    Name = x.ToString()
-                });
-
-            return Ok(types);
-        }
-
+        #endregion
     }
 }

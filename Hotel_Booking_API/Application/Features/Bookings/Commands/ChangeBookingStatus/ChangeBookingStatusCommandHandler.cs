@@ -2,7 +2,6 @@ using AutoMapper;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
-using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Enums;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
@@ -58,7 +57,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.ChangeBooking
                 // Validate status transition
                 if (!IsValidStatusTransition(currentStatus, newStatus))
                 {
-                    Log.Warning("Invalid status transition: {CurrentStatus} to {NewStatus} for booking {BookingId}", 
+                    Log.Warning("Invalid status transition: {CurrentStatus} to {NewStatus} for booking {BookingId}",
                         currentStatus, newStatus, request.Id);
                     throw new BadRequestException($"Invalid status transition from '{currentStatus}' to '{newStatus}'.");
                 }
@@ -75,7 +74,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.ChangeBooking
                 var bookingDto = _mapper.Map<BookingDto>(booking);
 
 
-                Log.Information("Booking status changed successfully from {CurrentStatus} to {NewStatus} for booking {BookingId}", 
+                Log.Information("Booking status changed successfully from {CurrentStatus} to {NewStatus} for booking {BookingId}",
                     currentStatus, newStatus, booking.Id);
                 Log.Information("Completed {HandlerName} successfully", nameof(ChangeBookingStatusCommandHandler));
 

@@ -4,7 +4,6 @@ using Hotel_Booking_API.Domain.Enums;
 using Hotel_Booking_API.Domain.Interfaces;
 using Hotel_Booking_API.Infrastructure.Services;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Serilog;
 
 namespace Hotel_Booking_API.Application.Features.Payments.Commands.CreatePaymentIntent

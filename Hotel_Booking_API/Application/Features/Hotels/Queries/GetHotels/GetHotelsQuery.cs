@@ -1,8 +1,8 @@
-using MediatR;
-using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.Common.Interfaces;
+using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Infrastructure.Caching;
+using MediatR;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -21,7 +21,6 @@ namespace Hotel_Booking_API.Application.Features.Hotels.Queries.GetHotels
             var hash = Convert.ToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant()[..16];
             return CacheKeys.Hotels.List(hash);
         }
-
         public string? GetCacheProfile() => CacheProfiles.Hotels.List;
     }
 }

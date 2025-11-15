@@ -1,7 +1,5 @@
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.Common.Exceptions;
-using Hotel_Booking_API.Application.DTOs;
-using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Enums;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;

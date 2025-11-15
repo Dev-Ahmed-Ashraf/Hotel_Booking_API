@@ -1,10 +1,8 @@
-using Microsoft.Extensions.Configuration;
+using Hotel_Booking_API.Domain.Entities;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Hotel_Booking_API.Domain.Entities;
-using Hotel_Booking_API.Domain.Enums;
 
 namespace Hotel_Booking_API.Infrastructure.Services
 {
@@ -79,10 +77,10 @@ namespace Hotel_Booking_API.Infrastructure.Services
                 };
 
                 tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
-                
+
                 var jwtToken = (JwtSecurityToken)validatedToken;
                 var userId = jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value;
-                
+
                 return userId;
             }
             catch

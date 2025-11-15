@@ -9,7 +9,7 @@ namespace Hotel_Booking_API.Domain.Entities
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public UserRole Role { get; set; } = UserRole.Customer;
-        
+
         // Navigation properties
         public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
         public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();

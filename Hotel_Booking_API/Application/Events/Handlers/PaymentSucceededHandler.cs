@@ -19,7 +19,7 @@ namespace Hotel_Booking_API.Application.Events.Handlers
 
         public async Task Handle(PaymentSucceededEvent notification, CancellationToken cancellationToken)
         {
-            Log.Information("Processing PaymentSucceededEvent for PaymentId: {PaymentId}, UserId: {UserId}", 
+            Log.Information("Processing PaymentSucceededEvent for PaymentId: {PaymentId}, UserId: {UserId}",
                 notification.PaymentId, notification.UserId);
 
             try
@@ -64,7 +64,7 @@ namespace Hotel_Booking_API.Application.Events.Handlers
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error processing PaymentSucceededEvent for PaymentId: {PaymentId}", 
+                Log.Error(ex, "Error processing PaymentSucceededEvent for PaymentId: {PaymentId}",
                     notification.PaymentId);
                 // Don't rethrow - email failures should not block payment processing
             }

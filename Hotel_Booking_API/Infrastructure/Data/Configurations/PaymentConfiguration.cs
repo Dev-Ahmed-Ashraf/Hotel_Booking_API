@@ -1,6 +1,6 @@
+using Hotel_Booking_API.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Hotel_Booking_API.Domain.Entities;
 
 namespace Hotel_Booking_API.Infrastructure.Data.Configurations
 {
@@ -9,18 +9,18 @@ namespace Hotel_Booking_API.Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<Payment> builder)
         {
             builder.HasKey(p => p.Id);
-            
+
             builder.Property(p => p.Amount)
                 .HasPrecision(10, 2);
-                
+
             builder.Property(p => p.Status)
                 .IsRequired()
                 .HasConversion<int>();
-                
+
             builder.Property(p => p.PaymentMethod)
                 .IsRequired()
                 .HasConversion<int>();
-                
+
             builder.Property(p => p.TransactionId)
                 .HasMaxLength(100);
 

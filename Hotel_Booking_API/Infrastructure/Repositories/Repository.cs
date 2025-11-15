@@ -2,7 +2,6 @@ using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Interfaces;
 using Hotel_Booking_API.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Linq.Expressions;
 
 namespace Hotel_Booking_API.Infrastructure.Repositories
@@ -36,7 +35,7 @@ namespace Hotel_Booking_API.Infrastructure.Repositories
             return await _dbSet.AsNoTracking().ToListAsync();
         }
 
-        public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate) 
+        public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
         {
             // Use AsQueryable() to ensure we're working with IQueryable
             var query = _dbSet.AsQueryable();
@@ -72,7 +71,7 @@ namespace Hotel_Booking_API.Infrastructure.Repositories
         {
             if (predicate == null)
                 return await _dbSet.CountAsync();
-            
+
             return await _dbSet.CountAsync(predicate);
         }
 
