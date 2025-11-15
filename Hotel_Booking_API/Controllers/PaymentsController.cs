@@ -19,29 +19,44 @@ namespace Hotel_Booking_API.Controllers
             _mediator = mediator;
         }
 
+        /// <summary>
+        /// Creates a Stripe PaymentIntent for a booking.
+        /// </summary>
         [HttpPost("intents")]
         [ProducesResponseType(typeof(ApiResponse<CreatePaymentIntentResponseDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<ApiResponse<CreatePaymentIntentResponseDto>>> CreatePaymentIntent([FromBody] CreatePaymentIntentCommand command)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ApiResponse<CreatePaymentIntentResponseDto>>> CreatePaymentIntent(
+            [FromBody] CreatePaymentIntentCommand command)
         {
             var dto = await _mediator.Send(command);
-            return Ok(ApiResponse<CreatePaymentIntentResponseDto>.SuccessResponse(dto, "PaymentIntent created"));
+
+            return Ok(ApiResponse<CreatePaymentIntentResponseDto>.SuccessResponse(dto, "PaymentIntent created successfully"));
         }
 
-        [HttpGet("{id}")]
+        /// <summary>
+        /// Gets a payment by its ID.
+        /// </summary>
+        [HttpGet("{id:int}")]
         [ProducesResponseType(typeof(ApiResponse<PaymentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<PaymentDto>>> GetPaymentById([FromRoute, Range(1, int.MaxValue)] int id)
+        public async Task<ActionResult<ApiResponse<PaymentDto>>> GetPaymentById([Range(1, int.MaxValue)] int id)
         {
             var dto = await _mediator.Send(new GetPaymentByIdQuery { Id = id });
+
             return Ok(ApiResponse<PaymentDto>.SuccessResponse(dto));
         }
 
-        [HttpGet("/api/bookings/{bookingId}/payment")]
+        /// <summary>
+        /// Gets the payment linked to a booking.
+        /// </summary>
+        [HttpGet("~/api/bookings/{bookingId:int}/payment")]
         [ProducesResponseType(typeof(ApiResponse<PaymentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<PaymentDto>>> GetPaymentByBooking([FromRoute, Range(1, int.MaxValue)] int bookingId)
+        public async Task<ActionResult<ApiResponse<PaymentDto>>> GetPaymentByBooking(
+            [Range(1, int.MaxValue)] int bookingId)
         {
             var dto = await _mediator.Send(new GetPaymentByBookingQuery { BookingId = bookingId });
+
             return Ok(ApiResponse<PaymentDto>.SuccessResponse(dto));
         }
     }

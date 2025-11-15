@@ -24,6 +24,17 @@ namespace Hotel_Booking_API.Infrastructure.Data.Configurations
             builder.Property(p => p.TransactionId)
                 .HasMaxLength(100);
 
+            builder.Property(p => p.Currency)
+                .IsRequired()
+                .HasMaxLength(3)
+                .HasDefaultValue("usd");
+
+            builder.Property(p => p.StripeEventId)
+                .HasMaxLength(100);
+
+            builder.Property(p => p.FailureReason)
+                .HasMaxLength(500);
+
             // Foreign key relationship
             builder.HasOne(p => p.Booking)
                 .WithOne(b => b.Payment)

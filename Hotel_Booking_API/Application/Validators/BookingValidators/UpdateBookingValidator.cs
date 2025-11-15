@@ -3,10 +3,6 @@ using Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking;
 
 namespace Hotel_Booking_API.Application.Validators.BookingValidators
 {
-    /// <summary>
-    /// Validator for UpdateBookingCommand to ensure all update parameters are valid.
-    /// Validates dates and business rules for partial updates.
-    /// </summary>
     public class UpdateBookingValidator : AbstractValidator<UpdateBookingCommand>
     {
         public UpdateBookingValidator()

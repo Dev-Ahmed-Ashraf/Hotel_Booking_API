@@ -21,12 +21,6 @@ namespace Hotel_Booking_API.Application.Validators.BookingValidators
             RuleFor(x => x.CheckOutDate)
                 .GreaterThan(x => x.CheckInDate)
                 .WithMessage("Check-out date must be after check-in date.");
-
-            // Optional: ExcludeBookingId must be positive if provided
-            RuleFor(x => x.ExcludeBookingId)
-                .GreaterThan(0)
-                .When(x => x.ExcludeBookingId.HasValue)
-                .WithMessage("ExcludeBookingId must be a positive number if provided.");
         }
     }
 }

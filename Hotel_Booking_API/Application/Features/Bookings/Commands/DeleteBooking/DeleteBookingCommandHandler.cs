@@ -20,12 +20,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.DeleteBooking
             _unitOfWork = unitOfWork;
         }
 
-        /// <summary>
-        /// Handles the booking deletion request by validating business rules and removing the booking.
-        /// </summary>
-        /// <param name="request">The delete booking command containing booking ID and deletion options</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing success message or error message</returns>
         public async Task<ApiResponse<string>> Handle(DeleteBookingCommand request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(DeleteBookingCommandHandler), request);
@@ -39,25 +33,20 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.DeleteBooking
                     b => b.Room
                 );
 
-                if (booking == null)
-                {
-                    Log.Warning("Booking not found: {BookingId}", request.Id);
+                if (booking is null || booking.IsDeleted)
                     throw new NotFoundException("Booking", request.Id);
+
+                // Prevent deleting completed bookings (hard delete)
+                if (!request.IsSoft && booking.Status == BookingStatus.Completed)
+                {
+                    throw new BadRequestException("Completed bookings cannot be permanently deleted.");
                 }
 
-                if (booking.IsDeleted)
+                // 3) Prevent soft deleting active bookings unless forced
+                if (booking.Status != BookingStatus.Cancelled &&
+                    booking.Status != BookingStatus.Completed &&
+                    !request.ForceDelete)
                 {
-                    Log.Warning("Booking already deleted: {BookingId}", request.Id);
-                    throw new BadRequestException($"Booking with ID {request.Id} is already deleted.");
-                }
-
-                // Check if booking has active status (not cancelled or completed)
-                var hasActiveStatus = booking.Status != BookingStatus.Cancelled && booking.Status != BookingStatus.Completed;
-
-                // If not forcing deletion and booking is active, restore room availability
-                if (!request.ForceDelete && hasActiveStatus && booking.Room != null)
-                {
-                    Log.Warning("Cannot delete active booking without force option: {BookingId}", request.Id);
                     throw new BadRequestException("Cannot delete an active booking unless force delete is enabled.");
                 }
 
@@ -66,6 +55,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.DeleteBooking
                 {
                     // Soft delete: mark as deleted but keep the record
                     booking.IsDeleted = true;
+                    booking.Status = BookingStatus.Cancelled;
                     booking.UpdatedAt = DateTime.UtcNow;
                     await _unitOfWork.Bookings.UpdateAsync(booking);
                     Log.Information("Booking soft deleted successfully with ID {BookingId}", booking.Id);

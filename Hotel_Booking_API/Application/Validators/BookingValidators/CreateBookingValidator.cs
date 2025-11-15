@@ -3,10 +3,6 @@ using Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking;
 
 namespace Hotel_Booking_API.Application.Validators.BookingValidators
 {
-    /// <summary>
-    /// Validator for CreateBookingCommand to ensure all booking parameters are valid.
-    /// Validates dates, room ID, and business rules.
-    /// </summary>
     public class CreateBookingValidator : AbstractValidator<CreateBookingCommand>
     {
         public CreateBookingValidator()

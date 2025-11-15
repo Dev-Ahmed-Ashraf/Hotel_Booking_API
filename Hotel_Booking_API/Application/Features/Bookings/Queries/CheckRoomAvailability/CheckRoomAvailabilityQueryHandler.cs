@@ -18,12 +18,16 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.CheckRoomAvail
         }
         public async Task<ApiResponse<bool>> Handle(CheckRoomAvailabilityQuery request, CancellationToken cancellationToken)
         {
-            Log.Information("Starting {HandlerName} with request {@Request}", nameof(CheckRoomAvailabilityQueryHandler), request);
+            Log.Information("Starting {HandlerName} with request {@Request}",
+                nameof(CheckRoomAvailabilityQueryHandler), request);
 
             try
             {
-                // ?????? ?? ???? ??????
-                var room = await _unitOfWork.Rooms.GetByIdAsync(request.RoomId, cancellationToken);
+                // Validate room exists
+                var room = await _unitOfWork.Rooms.GetByIdAsync(
+                    request.RoomId,
+                    cancellationToken
+                );
 
                 if (room is null || room.IsDeleted)
                 {
@@ -31,25 +35,19 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.CheckRoomAvail
                     throw new NotFoundException(nameof(Room), request.RoomId);
                 }
 
-                // ????? ?? ???????? ?????????
-                var overlappingBookings = await _unitOfWork.Bookings.FindAsync(
-                    b => b.RoomId == request.RoomId &&
-                         !b.IsDeleted &&
-                         b.Status != BookingStatus.Cancelled &&
-                         (request.ExcludeBookingId == null || b.Id != request.ExcludeBookingId) &&
-                         (
-                             (request.CheckInDate >= b.CheckInDate && request.CheckInDate < b.CheckOutDate) ||   // ????? ???????
-                             (request.CheckOutDate > b.CheckInDate && request.CheckOutDate <= b.CheckOutDate) || // ????? ???????
-                             (request.CheckInDate <= b.CheckInDate && request.CheckOutDate >= b.CheckOutDate)    // ???? ????? ???
-                         )
+                // Call your repository function
+                var isAvailable = await _unitOfWork.Rooms.IsRoomAvailableAsync(
+                    request.RoomId,
+                    request.CheckInDate,
+                    request.CheckOutDate,
+                    cancellationToken
                 );
 
-                bool isAvailable = !overlappingBookings.Any();
+                Log.Information(
+                    "Room availability check: RoomId={RoomId}, Start={Start}, End={End}, Available={Available}",
+                    request.RoomId, request.CheckInDate, request.CheckOutDate, isAvailable
+                );
 
-                Log.Information("Room {RoomId} availability between {CheckInDate} and {CheckOutDate}: {IsAvailable}",
-                    request.RoomId, request.CheckInDate, request.CheckOutDate, isAvailable);
-
-                // ????? ???????
                 return ApiResponse<bool>.SuccessResponse(
                     isAvailable,
                     isAvailable ? "Room is available for booking." : "Room is not available for the selected dates."
@@ -57,11 +55,10 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.CheckRoomAvail
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error while processing {HandlerName} for RoomId: {RoomId}",
+                Log.Error(ex, "Error while processing {HandlerName} for RoomId {RoomId}",
                     nameof(CheckRoomAvailabilityQueryHandler), request.RoomId);
                 throw;
             }
-
         }
     }
 }

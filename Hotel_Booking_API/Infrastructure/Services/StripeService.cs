@@ -8,12 +8,14 @@ namespace Hotel_Booking_API.Infrastructure.Services
     {
         private readonly StripeOptions _options;
         private readonly PaymentIntentService _paymentIntentService;
+        private readonly ChargeService _chargeService;
 
         public StripeService(IOptions<StripeOptions> options)
         {
             _options = options.Value;
             StripeConfiguration.ApiKey = _options.ApiKey;
             _paymentIntentService = new PaymentIntentService();
+            _chargeService = new ChargeService();
         }
 
         public async Task<(string PaymentIntentId, string ClientSecret)> CreatePaymentIntentAsync(
@@ -44,6 +46,22 @@ namespace Hotel_Booking_API.Infrastructure.Services
             Log.Information("Stripe PaymentIntent created: {PaymentIntentId}", intent.Id);
 
             return (intent.Id, intent.ClientSecret!);
+        }
+
+        public async Task<PaymentIntent> GetPaymentIntentAsync(string paymentIntentId, CancellationToken cancellationToken = default)
+        {
+            Log.Debug("Retrieving Stripe PaymentIntent: {PaymentIntentId}", paymentIntentId);
+            var intent = await _paymentIntentService.GetAsync(paymentIntentId, cancellationToken: cancellationToken);
+            Log.Debug("Retrieved Stripe PaymentIntent: {PaymentIntentId}, Status={Status}", intent.Id, intent.Status);
+            return intent;
+        }
+
+        public async Task<Charge> GetChargeAsync(string chargeId, CancellationToken cancellationToken = default)
+        {
+            Log.Debug("Retrieving Stripe Charge: {ChargeId}", chargeId);
+            var charge = await _chargeService.GetAsync(chargeId, cancellationToken: cancellationToken);
+            Log.Debug("Retrieved Stripe Charge: {ChargeId}, Status={Status}", charge.Id, charge.Status);
+            return charge;
         }
 
         public Event VerifyWebhookSignature(string json, string signatureHeader)

@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Entities;
+using Hotel_Booking_API.Domain.Enums;
 using Hotel_Booking_API.Infrastructure.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -25,13 +26,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookings
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the get bookings query by applying filters and pagination.
-        /// All validation is handled by the GetBookingsValidator through the MediatR pipeline.
-        /// </summary>
-        /// <param name="request">The query containing pagination and search parameters</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing paginated list of bookings or error message</returns>
         public async Task<ApiResponse<PagedList<BookingDto>>> Handle(GetBookingsQuery request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(GetBookingsQueryHandler), request);
@@ -44,39 +38,31 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookings
                     .Include(b => b.User)
                     .Include(b => b.Room).ThenInclude(r => r.Hotel)
                     .Include(b => b.Payment)
-                    .AsNoTracking()
-                    .AsQueryable();
+                    .AsNoTracking();
 
-                // Filter out soft-deleted bookings unless explicitly requested
-                if (!request.IncludeDeleted)
-                    query = query.Where(b => !b.IsDeleted);
+                // Soft delete
+                query = request.IncludeDeleted ? query : query.Where(b => !b.IsDeleted);
 
-                // Apply search filters if provided
-                if (request.Search is not null)
+                // Filters
+                if (request.Search is { } search)
                 {
-                    var search = request.Search;
+                    if (search.HotelId is int hotelId)
+                        query = query.Where(b => b.Room!.HotelId == hotelId);
 
-                    // Filter by hotel ID
-                    if (search.HotelId.HasValue)
-                        query = query.Where(b => b.Room!.HotelId == search.HotelId.Value);
+                    if (search.UserId is int userId)
+                        query = query.Where(b => b.UserId == userId);
 
-                    // Filter by user ID
-                    if (search.UserId.HasValue)
-                        query = query.Where(b => b.UserId == search.UserId.Value);
+                    if (search.Status is BookingStatus status)
+                        query = query.Where(b => b.Status == status);
 
-                    // Filter by status
-                    if (search.Status.HasValue)
-                        query = query.Where(b => b.Status == search.Status.Value);
+                    if (search.StartDate is DateTime start)
+                        query = query.Where(b => b.CheckInDate >= start);
 
-                    // Filter by date range
-                    if (search.StartDate.HasValue)
-                        query = query.Where(b => b.CheckInDate >= search.StartDate.Value);
-
-                    if (search.EndDate.HasValue)
-                        query = query.Where(b => b.CheckOutDate <= search.EndDate.Value);
+                    if (search.EndDate is DateTime end)
+                        query = query.Where(b => b.CheckOutDate <= end);
                 }
 
-                // Get total count for pagination
+                // Count
                 var totalCount = await query.CountAsync(cancellationToken);
 
                 // Apply pagination and ordering

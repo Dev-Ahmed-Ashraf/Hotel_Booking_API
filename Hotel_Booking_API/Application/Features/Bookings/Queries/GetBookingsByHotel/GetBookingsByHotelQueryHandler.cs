@@ -28,6 +28,17 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByH
 
             try
             {
+                // Check if hotel exists
+                var hotelExists = await _dbContext.Hotels
+                    .AsNoTracking()
+                    .AnyAsync(h => h.Id == request.HotelId, cancellationToken);
+
+                if (!hotelExists)
+                {
+                    Log.Warning("Hotel with ID {HotelId} does not exist.", request.HotelId);
+                    throw new NotFoundException("Hotel", request.HotelId);
+                }
+
                 // Start with base query for hotel bookings
                 IQueryable<Booking> query = _dbContext.Bookings
                 .AsNoTracking()
@@ -35,13 +46,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByH
 
                 // Get total count for pagination
                 var totalCount = await query.CountAsync(cancellationToken);
-
-                if (totalCount == 0)
-                {
-                    Log.Warning("Hotel {HotelId} has no active bookings.", request.HotelId);
-                    throw new NotFoundException($"No active bookings found for hotel with ID {request.HotelId}.");
-                }
-
 
                 var bookings = await query
                 .OrderByDescending(b => b.CreatedAt)
@@ -60,7 +64,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByH
 
                 Log.Information("Retrieved {Count} bookings for hotel {HotelId} (page {PageNumber}) successfully",
                                 totalCount, request.HotelId, request.Pagination.PageNumber);
-
 
                 return ApiResponse<PagedList<BookingDto>>.SuccessResponse(pagedList, "Hotel bookings retrieved successfully");
             }

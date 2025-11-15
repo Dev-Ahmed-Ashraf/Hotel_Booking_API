@@ -24,12 +24,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the booking update request by validating business rules and persisting changes.
-        /// </summary>
-        /// <param name="request">The update booking command containing booking ID and update details</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing the updated booking details or error message</returns>
         public async Task<ApiResponse<BookingDto>> Handle(UpdateBookingCommand request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(UpdateBookingCommandHandler), request);
@@ -52,7 +46,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
                 }
 
                 // Block updates if booking is cancelled or completed
-                if (booking.Status == BookingStatus.Cancelled || booking.Status == BookingStatus.Completed)
+                if (booking.Status is BookingStatus.Cancelled or BookingStatus.Completed)
                 {
                     Log.Warning("Cannot update cancelled or completed booking: {BookingId}, Status: {Status}", request.Id, booking.Status);
                     throw new BadRequestException($"Cannot update booking with status '{booking.Status}'.");
@@ -62,46 +56,30 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
                 bool datesChanged = false;
 
                 // Apply partial updates - only update fields that are provided (not null)
-                if (dto.CheckInDate.HasValue)
+                if (dto.CheckInDate.HasValue && dto.CheckInDate.Value != booking.CheckInDate)
                 {
-                    if (dto.CheckInDate.Value != booking.CheckInDate)
-                    {
-                        booking.CheckInDate = dto.CheckInDate.Value;
-                        datesChanged = true;
-                    }
+                    booking.CheckInDate = dto.CheckInDate.Value;
+                    datesChanged = true;
                 }
 
-                if (dto.CheckOutDate.HasValue)
+                if (dto.CheckOutDate.HasValue && dto.CheckOutDate.Value != booking.CheckOutDate)
                 {
-                    if (dto.CheckOutDate.Value != booking.CheckOutDate)
-                    {
-                        booking.CheckOutDate = dto.CheckOutDate.Value;
-                        datesChanged = true;
-                    }
+                    booking.CheckOutDate = dto.CheckOutDate.Value;
+                    datesChanged = true;
                 }
 
                 // If dates changed, validate and recalculate price
                 if (datesChanged)
                 {
-                    // Validate new date range
-                    if (booking.CheckInDate >= booking.CheckOutDate)
-                    {
-                        Log.Warning("Invalid date range in update: CheckIn {CheckInDate} >= CheckOut {CheckOutDate}",
-                            booking.CheckInDate, booking.CheckOutDate);
-                        throw new BadRequestException("Check-out date must be after check-in date.");
-                    }
-
                     // Check for conflicting bookings (excluding current booking)
-                    var conflictingBookings = await _unitOfWork.Bookings.FindAsync(b =>
-                        b.RoomId == booking.RoomId &&
-                        b.Id != booking.Id &&
-                        !b.IsDeleted &&
-                        b.Status != BookingStatus.Cancelled &&
-                        b.CheckInDate < booking.CheckOutDate &&
-                        b.CheckOutDate > booking.CheckInDate
-                    );
+                    bool isAvailable = await _unitOfWork.Rooms.IsRoomAvailableAsync(
+                        booking.RoomId,
+                        booking.CheckInDate,
+                        booking.CheckOutDate,
+                        cancellationToken
+                );
 
-                    if (conflictingBookings.Any())
+                    if (!isAvailable)
                     {
                         Log.Warning("Room has conflicting bookings for new dates: {RoomId}, BookingId: {BookingId}",
                             booking.RoomId, request.Id);
@@ -109,7 +87,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
                     }
 
                     // Recalculate total price
-                    var days = (booking.CheckOutDate - booking.CheckInDate).Days;
+                    int days = (int)(booking.CheckOutDate.Date - booking.CheckInDate.Date).TotalDays;
                     booking.TotalPrice = days * booking.Room!.Price;
                 }
 
@@ -123,9 +101,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
                 // Map entity back to DTO for response
                 var bookingDto = _mapper.Map<BookingDto>(booking);
 
-
                 Log.Information("Booking updated successfully with ID {BookingId}", booking.Id);
-                Log.Information("Completed {HandlerName} successfully", nameof(UpdateBookingCommandHandler));
 
                 return ApiResponse<BookingDto>.SuccessResponse(bookingDto, "Booking updated successfully.");
             }

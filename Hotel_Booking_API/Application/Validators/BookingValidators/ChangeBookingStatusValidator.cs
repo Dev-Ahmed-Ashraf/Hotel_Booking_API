@@ -3,10 +3,6 @@ using Hotel_Booking_API.Application.Features.Bookings.Commands.ChangeBookingStat
 
 namespace Hotel_Booking_API.Application.Validators.BookingValidators
 {
-    /// <summary>
-    /// Validator for ChangeBookingStatusCommand to ensure status change parameters are valid.
-    /// Validates booking ID and new status.
-    /// </summary>
     public class ChangeBookingStatusValidator : AbstractValidator<ChangeBookingStatusCommand>
     {
         public ChangeBookingStatusValidator()

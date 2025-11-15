@@ -61,6 +61,7 @@ namespace Hotel_Booking_API.Application.Features.Payments.Commands.CreatePayment
                 {
                     BookingId = booking.Id,
                     Amount = booking.TotalPrice,
+                    Currency = currency,
                     Status = PaymentStatus.Pending,
                     PaymentMethod = PaymentMethod.CreditCard,
                     TransactionId = paymentIntentId
@@ -70,6 +71,7 @@ namespace Hotel_Booking_API.Application.Features.Payments.Commands.CreatePayment
             else
             {
                 booking.Payment.Status = PaymentStatus.Pending;
+                booking.Payment.Currency = currency;
                 booking.Payment.TransactionId = paymentIntentId;
                 await _unitOfWork.Payments.UpdateAsync(booking.Payment);
             }

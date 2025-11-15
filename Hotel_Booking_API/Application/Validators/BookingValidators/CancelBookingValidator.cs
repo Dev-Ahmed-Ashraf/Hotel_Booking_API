@@ -3,10 +3,7 @@ using Hotel_Booking_API.Application.Features.Bookings.Commands.CancelBooking;
 
 namespace Hotel_Booking_API.Application.Validators.BookingValidators
 {
-    /// <summary>
-    /// Validator for CancelBookingCommand to ensure cancellation parameters are valid.
-    /// Validates booking ID and cancellation details.
-    /// </summary>
+
     public class CancelBookingValidator : AbstractValidator<CancelBookingCommand>
     {
         public CancelBookingValidator()

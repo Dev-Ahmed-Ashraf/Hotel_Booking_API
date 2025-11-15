@@ -3,7 +3,9 @@ using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Interfaces;
+using Hotel_Booking_API.Infrastructure.Data;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingById
@@ -23,12 +25,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingById
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the get booking by ID query by retrieving the booking with related entities.
-        /// </summary>
-        /// <param name="request">The query containing the booking ID</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing the booking details or error message</returns>
         public async Task<ApiResponse<BookingDto>> Handle(GetBookingByIdQuery request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(GetBookingByIdQueryHandler), request);
@@ -41,7 +37,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingById
                     cancellationToken,
                     b => b.User,
                     b => b.Room,
-                    b => b.Room!.Hotel,
+                    b => b.Room.Hotel,
                     b => b.Payment
                 );
 
@@ -56,7 +52,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingById
                 var bookingDto = _mapper.Map<BookingDto>(booking);
 
                 Log.Information("Booking retrieved successfully with ID {BookingId} for user {UserId}", booking.Id, booking.UserId);
-                Log.Information("Completed {HandlerName} successfully", nameof(GetBookingByIdQueryHandler));
 
                 return ApiResponse<BookingDto>.SuccessResponse(bookingDto, "Booking retrieved successfully.");
             }

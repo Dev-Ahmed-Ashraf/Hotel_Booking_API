@@ -1,6 +1,7 @@
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
+using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
 using Serilog;
@@ -17,22 +18,39 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.CalculateBooki
         }
         public async Task<ApiResponse<BookingPriceResponseDto>> Handle(CalculateBookingPriceQuery request, CancellationToken cancellationToken)
         {
-            Log.Information("Starting {HandlerName} with request {@Request}", nameof(CalculateBookingPriceHandler), request);
+            Log.Information("Starting {HandlerName} with request {@Request}",
+                nameof(CalculateBookingPriceHandler), request);
 
             try
             {
                 // Retrieve room
-                var room = await _unitOfWork.Rooms.GetByIdAsync(request.RoomId, cancellationToken);
+                var room = await _unitOfWork.Rooms.GetByIdAsync(
+                    request.RoomId, cancellationToken
+                );
+
                 if (room is null || room.IsDeleted)
                 {
                     Log.Warning("Room not found or deleted: {RoomId}", request.RoomId);
-                    throw new NotFoundException(nameof(room), request.RoomId);
+                    throw new NotFoundException(nameof(Room), request.RoomId);
                 }
 
-                // Calculate nights
-                int nights = (request.CheckOutDate - request.CheckInDate).Days;
+                // Validate dates
+                int nights = (int)(request.CheckOutDate.Date - request.CheckInDate.Date).TotalDays;
 
-                // 3?? Calculate total price
+                // Check availability BEFORE calculating price
+                var isAvailable = await _unitOfWork.Rooms.IsRoomAvailableAsync(
+                    request.RoomId,
+                    request.CheckInDate,
+                    request.CheckOutDate,
+                    cancellationToken
+                );
+
+                if (!isAvailable)
+                {
+                    return ApiResponse<BookingPriceResponseDto>.ErrorResponse("Room is not available for the selected dates.");
+                }
+
+                // Calculate total price
                 decimal totalPrice = nights * room.Price;
 
                 var result = new BookingPriceResponseDto
@@ -44,13 +62,15 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.CalculateBooki
                     TotalPrice = totalPrice
                 };
 
-                Log.Information("Calculated booking price for RoomId {RoomId}: {TotalPrice} for {Nights} nights", room.Id, totalPrice, nights);
+                Log.Information("Calculated booking price for RoomId {RoomId}: {TotalPrice} for {Nights} nights",
+                    room.Id, totalPrice, nights);
 
                 return ApiResponse<BookingPriceResponseDto>.SuccessResponse(result, "Booking price calculated successfully.");
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error in {HandlerName} for RoomId: {RoomId}", nameof(CalculateBookingPriceHandler), request.RoomId);
+                Log.Error(ex, "Error in {HandlerName} for RoomId: {RoomId}",
+                    nameof(CalculateBookingPriceHandler), request.RoomId);
                 throw;
             }
         }

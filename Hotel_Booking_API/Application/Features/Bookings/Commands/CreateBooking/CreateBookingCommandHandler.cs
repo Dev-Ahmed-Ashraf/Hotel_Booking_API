@@ -7,6 +7,7 @@ using Hotel_Booking_API.Domain.Enums;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
 using Serilog;
+using System.ComponentModel.DataAnnotations;
 
 namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking
 {
@@ -25,12 +26,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the booking creation request by validating business rules and persisting the booking.
-        /// </summary>
-        /// <param name="request">The create booking command containing booking details</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing the created booking details or error message</returns>
         public async Task<ApiResponse<BookingDto>> Handle(CreateBookingCommand request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(CreateBookingCommandHandler), request);
@@ -72,25 +67,10 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking
                     throw new ConflictException($"Room {room.RoomNumber} is not available for the selected dates.");
                 }
 
-                // Double-check overlapping active bookings
-                var conflictingBookings = await _unitOfWork.Bookings.FindAsync(b =>
-                    b.RoomId == room.Id &&
-                    !b.IsDeleted &&
-                    b.Status != BookingStatus.Cancelled &&
-                    b.Status != BookingStatus.Completed &&
-                    b.CheckInDate < request.CreateBookingDto.CheckOutDate &&
-                    b.CheckOutDate > request.CreateBookingDto.CheckInDate
-                );
-
-                if (conflictingBookings.Any())
-                {
-                    Log.Warning("Room {RoomId} has conflicting bookings between {Start} and {End}",
-                    room.Id, request.CreateBookingDto.CheckInDate, request.CreateBookingDto.CheckOutDate);
-                    throw new ConflictException("Room is not available for the specified date range.");
-                }
-
                 // Calculate total price
-                var days = (request.CreateBookingDto.CheckOutDate - request.CreateBookingDto.CheckInDate).Days;
+                int days = (int)(request.CreateBookingDto.CheckOutDate.Date - request.CreateBookingDto.CheckInDate.Date).TotalDays;
+                if (days <= 0)
+                    throw new ValidationException("Check-out must be at least 1 day after check-in.");
                 var totalPrice = days * room.Price;
 
                 // Map DTO to entity and set values
@@ -113,7 +93,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking
 
                 Log.Information("Booking created successfully with ID {BookingId} for user {UserId} in room {RoomId}",
                     booking.Id, booking.UserId, booking.RoomId);
-                Log.Information("Completed {HandlerName} successfully", nameof(CreateBookingCommandHandler));
 
                 return ApiResponse<BookingDto>.SuccessResponse(bookingDto, "Booking created successfully.");
             }

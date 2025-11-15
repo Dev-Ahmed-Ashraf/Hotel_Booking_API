@@ -20,36 +20,24 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CancelBooking
             _unitOfWork = unitOfWork;
         }
 
-        /// <summary>
-        /// Handles the booking cancellation request by validating business rules and cancelling the booking.
-        /// </summary>
-        /// <param name="request">The cancel booking command containing booking ID and cancellation details</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing success message or error message</returns>
         public async Task<ApiResponse<string>> Handle(CancelBookingCommand request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(CancelBookingCommandHandler), request);
 
             try
             {
-                // Get the existing booking with room information
+                // 1) Get booking with full relations
                 var booking = await _unitOfWork.Bookings.GetByIdAsync(
                     request.Id,
                     cancellationToken,
-                    b => b.Room
+                    b => b.Room,
+                    b => b.Room!.Hotel,
+                    b => b.User,
+                    b => b.Payment
                 );
 
-                if (booking == null)
-                {
-                    Log.Warning("Booking not found: {BookingId}", request.Id);
+                if (booking is null || booking.IsDeleted)
                     throw new NotFoundException("Booking", request.Id);
-                }
-
-                if (booking.IsDeleted)
-                {
-                    Log.Warning("Booking already deleted: {BookingId}", request.Id);
-                    throw new BadRequestException($"Booking with ID {request.Id} is already deleted.");
-                }
 
                 // Block cancellation if already cancelled or completed
                 if (booking.Status == BookingStatus.Cancelled)
@@ -63,6 +51,14 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CancelBooking
                     Log.Warning("Cannot cancel completed booking: {BookingId}", request.Id);
                     throw new BadRequestException($"Cannot cancel booking with status '{BookingStatus.Completed}'.");
                 }
+
+                // Prevent cancellation close to check-in
+                if (booking.CheckInDate <= DateTime.UtcNow.AddHours(24))
+                    throw new BadRequestException("Cannot cancel booking within 24 hours of check-in.");
+
+                // Save cancellation reason
+                if (!string.IsNullOrEmpty(request.CancelBookingDto.Reason))
+                    booking.CancellationReason = request.CancelBookingDto.Reason;
 
                 // Update booking status to Cancelled
                 booking.Status = BookingStatus.Cancelled;
@@ -79,7 +75,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CancelBooking
                 }
 
                 Log.Information("Booking cancelled successfully with ID {BookingId}", booking.Id);
-                Log.Information("Completed {HandlerName} successfully", nameof(CancelBookingCommandHandler));
 
                 return ApiResponse<string>.SuccessResponse(message);
             }

@@ -26,34 +26,30 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByU
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the get bookings by user query by retrieving user's bookings with pagination.
-        /// </summary>
-        /// <param name="request">The query containing user ID and pagination parameters</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing paginated list of user's bookings or error message</returns>
         public async Task<ApiResponse<PagedList<BookingDto>>> Handle(GetBookingsByUserQuery request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(GetBookingsByUserQueryHandler), request);
 
             try
             {
+                // Check if user exists
+                var userExists = await _context.Users
+                    .AsNoTracking()
+                    .AnyAsync(u => u.Id == request.UserId, cancellationToken);
+
+                if (!userExists)
+                {
+                    Log.Warning("User with ID {UserId} does not exist.", request.UserId);
+                    throw new NotFoundException("User", request.UserId);
+                }
+
                 // Start with base query for user's bookings
                 IQueryable<Booking> query = _context.Bookings
-                    .Include(b => b.User)
-                    .Include(b => b.Room).ThenInclude(b => b.Hotel)
-                    .Include(b => b.Payment)
-                    .AsNoTracking()
-                    .Where(b => b.UserId == request.UserId && !b.IsDeleted);
+                .AsNoTracking()
+                .Where(b => b.UserId == request.UserId && !b.IsDeleted);
 
                 // Get total count for pagination
                 var totalCount = await query.CountAsync(cancellationToken);
-
-                if (totalCount == 0)
-                {
-                    Log.Warning("User {UserId} has no active bookings.", request.UserId);
-                    throw new NotFoundException($"No active bookings found for user with ID {request.UserId}.");
-                }
 
                 // Apply pagination and ordering
                 var bookings = await query
@@ -72,7 +68,6 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByU
                 );
 
                 Log.Information("User bookings retrieved successfully: {TotalCount} bookings found for user {UserId}, page {PageNumber}", totalCount, request.UserId, request.Pagination.PageNumber);
-                Log.Information("Completed {HandlerName} successfully", nameof(GetBookingsByUserQueryHandler));
 
                 return ApiResponse<PagedList<BookingDto>>.SuccessResponse(pagedList, "User bookings retrieved successfully");
             }

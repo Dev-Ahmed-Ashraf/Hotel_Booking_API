@@ -29,6 +29,7 @@ namespace Hotel_Booking_API.Controllers
     [Route("api/[controller]")]
     public class BookingsController : ControllerBase
     {
+        #region Fields and Constructor
         private readonly IMediator _mediator;
         private readonly ICacheInvalidator _cacheInvalidator;
 
@@ -37,69 +38,9 @@ namespace Hotel_Booking_API.Controllers
             _mediator = mediator;
             _cacheInvalidator = cacheInvalidator;
         }
+        #endregion
 
-        /// <summary>
-        /// Creates a new booking in the system.
-        /// </summary>
-        /// <param name="createBookingDto">The booking details to create</param>
-        /// <param name="userId">The ID of the user making the booking</param>
-        /// <returns>Returns the created booking details wrapped in an ApiResponse</returns>
-        /// <remarks>
-        /// Requires Customer or Admin role authorization.
-        /// Validates room availability and calculates total price automatically.
-        /// </remarks>
-        /// <response code="201">Booking created successfully.</response>
-        /// <response code="400">Validation failed or room not available.</response>
-        /// <response code="401">Unauthorized — the request requires authentication.</response>
-        [HttpPost]
-        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
-        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<ApiResponse<BookingDto>>> CreateBooking(
-            [FromBody] CreateBookingDto createBookingDto,
-            [FromQuery, Range(1, int.MaxValue)] int userId)
-        {
-            var command = new CreateBookingCommand
-            {
-                CreateBookingDto = createBookingDto,
-                UserId = userId
-            };
-
-            var result = await _mediator.Send(command);
-            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
-            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
-            return CreatedAtAction(nameof(GetBookingById), new { id = result.Data?.Id }, result);
-        }
-
-
-        /// <summary>
-        /// Retrieves a specific booking by its unique identifier.
-        /// </summary>
-        /// <param name="id">The unique identifier of the booking.</param>
-        /// <returns>Returns the booking details wrapped in an ApiResponse</returns>
-        /// <remarks>
-        /// Returns detailed booking information including hotel, room, and user details.
-        /// </remarks>
-        /// <response code="200">Booking retrieved successfully.</response>
-        /// <response code="404">Booking not found.</response>
-        /// <response code="401">Unauthorized — the request requires authentication.</response>
-        [HttpGet("{id}")]
-        [Authorize]
-        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<ApiResponse<BookingDto>>> GetBookingById([FromRoute, Range(1, int.MaxValue)] int id)
-        {
-            var query = new GetBookingByIdQuery { Id = id };
-            var result = await _mediator.Send(query);
-
-            if (!result.Success)
-                return NotFound(result);
-
-            return Ok(result);
-        }
-
+        #region Get Endpoints
         /// <summary>
         /// Retrieves a paginated list of bookings with optional filtering.
         /// </summary>
@@ -155,153 +96,29 @@ namespace Hotel_Booking_API.Controllers
         }
 
         /// <summary>
-        /// Updates Booking dates.
+        /// Retrieves a specific booking by its unique identifier.
         /// </summary>
-        /// <param name="id">The ID of the booking to update.</param>
-        /// <param name="updateBookingDto">The fields you want to update.</param>
-        /// <returns>Returns the updated booking details wrapped in an ApiResponse</returns>
+        /// <param name="id">The unique identifier of the booking.</param>
+        /// <returns>Returns the booking details wrapped in an ApiResponse</returns>
         /// <remarks>
-        /// Requires Customer or Admin role authorization.
-        /// Supports partial updates - only provided fields will be updated.
-        /// Cannot update cancelled or completed bookings.
+        /// Returns detailed booking information including hotel, room, and user details.
         /// </remarks>
-        /// <response code="200">Booking updated successfully.</response>
-        /// <response code="400">Validation failed or booking cannot be updated.</response>
+        /// <response code="200">Booking retrieved successfully.</response>
         /// <response code="404">Booking not found.</response>
-        /// <response code="401">Unauthorized — the request requires Customer or admin privileges.</response>
-        [HttpPatch("{id}")]
-        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        /// <response code="401">Unauthorized — the request requires authentication.</response>
+        [HttpGet("{id}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> UpdateBooking(
-            [FromRoute, Range(1, int.MaxValue)] int id,
-            [FromBody] UpdateBookingDto updateBookingDto)
+        public async Task<ActionResult<ApiResponse<BookingDto>>> GetBookingById([FromRoute, Range(1, int.MaxValue)] int id)
         {
-            var command = new UpdateBookingCommand
-            {
-                Id = id,
-                UpdateBookingDto = updateBookingDto
-            };
+            var query = new GetBookingByIdQuery { Id = id };
+            var result = await _mediator.Send(query);
 
-            var result = await _mediator.Send(command);
-            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
-            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
-            return Ok(result);
-        }
+            if (!result.Success)
+                return NotFound(result);
 
-        /// <summary>
-        /// Deletes a booking by ID.
-        /// </summary>
-        /// <param name="id">Booking ID to delete</param>
-        /// <param name="isSoft">If true, marks the booking as deleted instead of removing it permanently (default: true)</param>
-        /// <param name="forceDelete">If true, forces deletion even if booking is active (default: false)</param>
-        /// <returns>204 No Content if successful, 404 if not found</returns>
-        /// <remarks>
-        /// Requires Owner or Admin role authorization.
-        /// By default, performs soft delete to maintain data integrity.
-        /// Restores room availability if booking is active.
-        /// </remarks>
-        /// <response code="204">Booking deleted successfully.</response>
-        /// <response code="404">Booking not found.</response>
-        /// <response code="400">Cannot delete active booking without force delete.</response>
-        /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
-        [HttpDelete("{id}")]
-        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> DeleteBooking(
-            [FromRoute, Range(1, int.MaxValue)] int id,
-            [FromQuery] bool isSoft = true,
-            [FromQuery] bool forceDelete = false)
-        {
-            var command = new DeleteBookingCommand
-            {
-                Id = id,
-                IsSoft = isSoft,
-                ForceDelete = forceDelete
-            };
-
-            var result = await _mediator.Send(command);
-            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
-            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Cancels an existing booking.
-        /// </summary>
-        /// <param name="id">The ID of the booking to cancel.</param>
-        /// <param name="cancelBookingDto">Cancellation details including reason.</param>
-        /// <returns>Returns success message wrapped in an ApiResponse</returns>
-        /// <remarks>
-        /// Requires Owner or Admin role authorization.
-        /// Changes booking status to Cancelled and restores room availability.
-        /// Cannot cancel already cancelled or completed bookings.
-        /// </remarks>
-        /// <response code="200">Booking cancelled successfully.</response>
-        /// <response code="400">Cannot cancel booking due to invalid status.</response>
-        /// <response code="404">Booking not found.</response>
-        /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
-        [HttpPost("{id}/cancel")]
-        //[Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
-        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> CancelBooking(
-            [FromRoute, Range(1, int.MaxValue)] int id,
-            [FromBody] CancelBookingDto cancelBookingDto)
-        {
-            var command = new CancelBookingCommand
-            {
-                Id = id,
-                CancelBookingDto = cancelBookingDto
-            };
-
-            var result = await _mediator.Send(command);
-            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
-            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Changes the status of an existing booking.
-        /// </summary>
-        /// <param name="id">The ID of the booking to update.</param>
-        /// <param name="changeBookingStatusDto">The new status and optional notes.</param>
-        /// <returns>Returns the updated booking details wrapped in an ApiResponse</returns>
-        /// <remarks>
-        /// Requires Admin or HotelManager role authorization.
-        /// Validates status transitions based on business rules.
-        /// Automatically manages room availability based on status changes.
-        /// </remarks>
-        /// <response code="200">Booking status changed successfully.</response>
-        /// <response code="400">Invalid status transition.</response>
-        /// <response code="404">Booking not found.</response>
-        /// <response code="401">Unauthorized — the request requires admin or hotel manager privileges.</response>
-        [HttpPatch("{id}/status")]
-        [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
-        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> ChangeBookingStatus(
-            [FromRoute, Range(1, int.MaxValue)] int id,
-            [FromBody] ChangeBookingStatusDto changeBookingStatusDto)
-        {
-            var command = new ChangeBookingStatusCommand
-            {
-                Id = id,
-                ChangeBookingStatusDto = changeBookingStatusDto
-            };
-
-            var result = await _mediator.Send(command);
-            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
-            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
             return Ok(result);
         }
 
@@ -372,14 +189,207 @@ namespace Hotel_Booking_API.Controllers
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+        #endregion
 
+        #region Post Endpoints
+        /// <summary>
+        /// Creates a new booking in the system.
+        /// </summary>
+        /// <param name="createBookingDto">The booking details to create</param>
+        /// <param name="userId">The ID of the user making the booking</param>
+        /// <returns>Returns the created booking details wrapped in an ApiResponse</returns>
+        /// <remarks>
+        /// Requires Customer or Admin role authorization.
+        /// Validates room availability and calculates total price automatically.
+        /// </remarks>
+        /// <response code="201">Booking created successfully.</response>
+        /// <response code="400">Validation failed or room not available.</response>
+        /// <response code="401">Unauthorized — the request requires authentication.</response>
+        [HttpPost]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<BookingDto>>> CreateBooking(
+            [FromBody] CreateBookingDto createBookingDto,
+            [FromQuery, Range(1, int.MaxValue)] int userId)
+        {
+            var command = new CreateBookingCommand
+            {
+                CreateBookingDto = createBookingDto,
+                UserId = userId
+            };
+
+            var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
+            return CreatedAtAction(nameof(GetBookingById), new { id = result.Data?.Id }, result);
+        }
+
+
+        /// <summary>
+        /// Cancels an existing booking.
+        /// </summary>
+        /// <param name="id">The ID of the booking to cancel.</param>
+        /// <param name="cancelBookingDto">Cancellation details including reason.</param>
+        /// <returns>Returns success message wrapped in an ApiResponse</returns>
+        /// <remarks>
+        /// Requires Owner or Admin role authorization.
+        /// Changes booking status to Cancelled and restores room availability.
+        /// Cannot cancel already cancelled or completed bookings.
+        /// </remarks>
+        /// <response code="200">Booking cancelled successfully.</response>
+        /// <response code="400">Cannot cancel booking due to invalid status.</response>
+        /// <response code="404">Booking not found.</response>
+        /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
+        [HttpPost("{id}/cancel")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> CancelBooking(
+            [FromRoute, Range(1, int.MaxValue)] int id,
+            [FromBody] CancelBookingDto cancelBookingDto)
+        {
+            var command = new CancelBookingCommand
+            {
+                Id = id,
+                CancelBookingDto = cancelBookingDto
+            };
+
+            var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
+            return Ok(result);
+        }
+        #endregion
+
+        #region Patch Endpoints
+        /// <summary>
+        /// Updates Booking dates.
+        /// </summary>
+        /// <param name="id">The ID of the booking to update.</param>
+        /// <param name="updateBookingDto">The fields you want to update.</param>
+        /// <returns>Returns the updated booking details wrapped in an ApiResponse</returns>
+        /// <remarks>
+        /// Requires Customer or Admin role authorization.
+        /// Supports partial updates - only provided fields will be updated.
+        /// Cannot update cancelled or completed bookings.
+        /// </remarks>
+        /// <response code="200">Booking updated successfully.</response>
+        /// <response code="400">Validation failed or booking cannot be updated.</response>
+        /// <response code="404">Booking not found.</response>
+        /// <response code="401">Unauthorized — the request requires Customer or admin privileges.</response>
+        [HttpPatch("{id}")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> UpdateBooking(
+            [FromRoute, Range(1, int.MaxValue)] int id,
+            [FromBody] UpdateBookingDto updateBookingDto)
+        {
+            var command = new UpdateBookingCommand
+            {
+                Id = id,
+                UpdateBookingDto = updateBookingDto
+            };
+
+            var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Changes the status of an existing booking.
+        /// </summary>
+        /// <param name="id">The ID of the booking to update.</param>
+        /// <param name="changeBookingStatusDto">The new status and optional notes.</param>
+        /// <returns>Returns the updated booking details wrapped in an ApiResponse</returns>
+        /// <remarks>
+        /// Requires Admin or HotelManager role authorization.
+        /// Validates status transitions based on business rules.
+        /// Automatically manages room availability based on status changes.
+        /// </remarks>
+        /// <response code="200">Booking status changed successfully.</response>
+        /// <response code="400">Invalid status transition.</response>
+        /// <response code="404">Booking not found.</response>
+        /// <response code="401">Unauthorized — the request requires admin or hotel manager privileges.</response>
+        [HttpPatch("{id}/status")]
+        [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
+        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<BookingDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> ChangeBookingStatus(
+            [FromRoute, Range(1, int.MaxValue)] int id,
+            [FromBody] ChangeBookingStatusDto changeBookingStatusDto)
+        {
+            var command = new ChangeBookingStatusCommand
+            {
+                Id = id,
+                ChangeBookingStatusDto = changeBookingStatusDto
+            };
+
+            var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
+            return Ok(result);
+        }
+        #endregion
+
+        #region Delete Endpoints
+        /// <summary>
+        /// Deletes a booking by ID.
+        /// </summary>
+        /// <param name="id">Booking ID to delete</param>
+        /// <param name="isSoft">If true, marks the booking as deleted instead of removing it permanently (default: true)</param>
+        /// <param name="forceDelete">If true, forces deletion even if booking is active (default: false)</param>
+        /// <returns>204 No Content if successful, 404 if not found</returns>
+        /// <remarks>
+        /// Requires Owner or Admin role authorization.
+        /// By default, performs soft delete to maintain data integrity.
+        /// Restores room availability if booking is active.
+        /// </remarks>
+        /// <response code="204">Booking deleted successfully.</response>
+        /// <response code="404">Booking not found.</response>
+        /// <response code="400">Cannot delete active booking without force delete.</response>
+        /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
+        [HttpDelete("{id}")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> DeleteBooking(
+            [FromRoute, Range(1, int.MaxValue)] int id,
+            [FromQuery] bool isSoft = true,
+            [FromQuery] bool forceDelete = false)
+        {
+            var command = new DeleteBookingCommand
+            {
+                Id = id,
+                IsSoft = isSoft,
+                ForceDelete = forceDelete
+            };
+
+            var result = await _mediator.Send(command);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Bookings.Prefix);
+            await _cacheInvalidator.RemoveByPrefixAsync(CacheKeys.Rooms.Prefix);
+            return Ok(result);
+        }
+        #endregion
+
+        #region Check Availability and Price Endpoints
         /// <summary>
         /// Checks if a room is available for the specified date range.
         /// </summary>
         /// <param name="roomId">The ID of the room to check.</param>
         /// <param name="checkInDate">The check-in date.</param>
         /// <param name="checkOutDate">The check-out date.</param>
-        /// <param name="excludeBookingId">Optional booking ID to exclude from conflict check (for updates).</param>
         /// <returns>Returns boolean result indicating room availability wrapped in an ApiResponse</returns>
         /// <remarks>
         /// Public endpoint - no authentication required.
@@ -393,16 +403,21 @@ namespace Hotel_Booking_API.Controllers
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse<bool>>> CheckRoomAvailability(
             [FromQuery, Range(1, int.MaxValue)] int roomId,
-            [FromQuery] DateTime checkInDate,
-            [FromQuery] DateTime checkOutDate,
-            [FromQuery, Range(1, int.MaxValue)] int? excludeBookingId = null)
+            [FromQuery] DateTime checkInDate = default,
+            [FromQuery] DateTime checkOutDate = default
+            )
         {
+            // Set default dates if not provided
+            if (checkInDate == default)
+                checkInDate = DateTime.Today;
+            if (checkOutDate == default)
+                checkOutDate = checkInDate.AddDays(1);
+
             var query = new CheckRoomAvailabilityQuery
             {
                 RoomId = roomId,
                 CheckInDate = checkInDate,
-                CheckOutDate = checkOutDate,
-                ExcludeBookingId = excludeBookingId
+                CheckOutDate = checkOutDate
             };
 
             var result = await _mediator.Send(query);
@@ -441,5 +456,6 @@ namespace Hotel_Booking_API.Controllers
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+        #endregion
     }
 }

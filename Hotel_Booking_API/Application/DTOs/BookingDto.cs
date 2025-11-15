@@ -15,7 +15,9 @@ namespace Hotel_Booking_API.Application.DTOs
         public DateTime CheckOutDate { get; set; }
         public decimal TotalPrice { get; set; }
         public BookingStatus Status { get; set; }
+        public string? CancellationReason { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool IsDeleted { get; set; }
         public PaymentDto? Payment { get; set; }
     }
 
@@ -52,13 +54,6 @@ namespace Hotel_Booking_API.Application.DTOs
         public string? Notes { get; set; }
     }
 
-    public class BookingPriceRequestDto
-    {
-        public int RoomId { get; set; }
-        public DateTime CheckInDate { get; set; }
-        public DateTime CheckOutDate { get; set; }
-    }
-
     public class BookingPriceResponseDto
     {
         public int RoomId { get; set; }
@@ -66,11 +61,5 @@ namespace Hotel_Booking_API.Application.DTOs
         public decimal RoomPrice { get; set; }
         public int Days { get; set; }
         public decimal TotalPrice { get; set; }
-    }
-
-    public class UserBookingsDto
-    {
-        public int UserId { get; set; }
-        public PaginationParameters? Pagination { get; set; }
     }
 }

@@ -84,6 +84,9 @@ namespace Hotel_Booking_API
             services.Configure<StripeOptions>(configuration.GetSection("Stripe"));
             services.AddSingleton<IStripeService, StripeService>();
 
+            // Payment update service
+            services.AddScoped<Hotel_Booking_API.Application.Features.Payments.Services.IPaymentUpdateService, Hotel_Booking_API.Application.Features.Payments.Services.PaymentUpdateService>();
+
             // Email service configuration
             services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
             services.AddScoped<IEmailService, EmailService>();

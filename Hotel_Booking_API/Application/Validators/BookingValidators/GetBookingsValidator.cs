@@ -36,11 +36,11 @@ namespace Hotel_Booking_API.Application.Validators.BookingValidators
                     .When(x => x.Search!.Status.HasValue);
 
                 RuleFor(x => x.Search!.StartDate)
-                    .LessThanOrEqualTo(x => x.Search!.EndDate).WithMessage("Start date must be before or equal to end date")
+                    .LessThan(x => x.Search!.EndDate).WithMessage("Start date must be before end date")
                     .When(x => x.Search!.StartDate.HasValue && x.Search!.EndDate.HasValue);
 
                 RuleFor(x => x.Search!.EndDate)
-                    .GreaterThanOrEqualTo(x => x.Search!.StartDate).WithMessage("End date must be after or equal to start date")
+                    .GreaterThan(x => x.Search!.StartDate).WithMessage("End date must be after start date")
                     .When(x => x.Search!.StartDate.HasValue && x.Search!.EndDate.HasValue);
             });
         }
