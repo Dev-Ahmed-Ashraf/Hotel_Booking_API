@@ -23,12 +23,6 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Queries.GetReviewById
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the get review by ID query by retrieving the review with related entities.
-        /// </summary>
-        /// <param name="request">The query containing the review ID</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing the review details or error message</returns>
         public async Task<ApiResponse<ReviewDto>> Handle(GetReviewByIdQuery request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(GetReviewByIdQueryHandler), request);
@@ -54,7 +48,6 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Queries.GetReviewById
                 var reviewDto = _mapper.Map<ReviewDto>(review);
 
                 Log.Information("Review retrieved successfully with ID {ReviewId} for user {UserId}", review.Id, review.UserId);
-                Log.Information("Completed {HandlerName} successfully", nameof(GetReviewByIdQueryHandler));
 
                 return ApiResponse<ReviewDto>.SuccessResponse(reviewDto, "Review retrieved successfully.");
             }

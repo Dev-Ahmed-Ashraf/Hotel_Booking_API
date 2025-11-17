@@ -1,10 +1,13 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Entities;
+using Hotel_Booking_API.Domain.Enums;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Hotel_Booking_API.Application.Features.Reviews.Commands.CreateReview
@@ -24,39 +27,62 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.CreateReview
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the review creation request by validating business rules and persisting the review.
-        /// </summary>
-        /// <param name="request">The create review command containing review details</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing the created review details or error message</returns>
         public async Task<ApiResponse<ReviewDto>> Handle(CreateReviewCommand request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(CreateReviewCommandHandler), request);
 
             try
             {
-                // Validate that the user exists
-                var user = await _unitOfWork.Users.GetByIdAsync(request.UserId, cancellationToken);
-                if (user is null || user.IsDeleted)
+                // ensure user exists
+                var userExists = await _unitOfWork.Users
+                    .Query()
+                    .AnyAsync(u => u.Id == request.UserId && !u.IsDeleted, cancellationToken);
+
+                if (!userExists)
                 {
                     Log.Warning("User not found or deleted: {UserId}", request.UserId);
                     throw new NotFoundException("User", request.UserId);
                 }
 
-                // Validate that the hotel exists
-                var hotel = await _unitOfWork.Hotels.GetByIdAsync(request.CreateReviewDto.HotelId, cancellationToken);
-                if (hotel is null || hotel.IsDeleted)
+                // ensure hotel exists
+                var hotelExists = await _unitOfWork.Hotels
+                    .Query()
+                    .AnyAsync(h => h.Id == request.CreateReviewDto.HotelId && !h.IsDeleted, cancellationToken);
+
+                if (!hotelExists)
                 {
                     Log.Warning("Hotel not found or deleted: {HotelId}", request.CreateReviewDto.HotelId);
                     throw new NotFoundException("Hotel", request.CreateReviewDto.HotelId);
                 }
 
-                // Validate rating is between 1-5 (also enforced by DB constraint)
-                if (request.CreateReviewDto.Rating < 1 || request.CreateReviewDto.Rating > 5)
+                // Prevent duplicate reviews by same user
+                var alreadyReviewed = await _unitOfWork.Reviews
+                    .Query()
+                    .AnyAsync(r =>
+                        r.UserId == request.UserId &&
+                        r.HotelId == request.CreateReviewDto.HotelId &&
+                        !r.IsDeleted,
+                        cancellationToken);
+
+                if (alreadyReviewed)
                 {
-                    Log.Warning("Invalid rating provided: {Rating}", request.CreateReviewDto.Rating);
-                    throw new BadRequestException("Rating must be between 1 and 5.");
+                    Log.Warning("User {UserId} already reviewed hotel {HotelId}", request.UserId, request.CreateReviewDto.HotelId);
+                    throw new BadRequestException("You have already reviewed this hotel.");
+                }
+
+                // Ensure user has stayed at the hotel (booking completed)
+                var userHasBooking = await _unitOfWork.Bookings
+                    .Query()
+                    .AnyAsync(b =>
+                        b.UserId == request.UserId &&
+                        b.Room.HotelId == request.CreateReviewDto.HotelId &&
+                        b.Status == BookingStatus.Completed,
+                        cancellationToken);
+
+                if (!userHasBooking)
+                {
+                    Log.Warning("User {UserId} attempted to review hotel {HotelId} without staying", request.UserId, request.CreateReviewDto.HotelId);
+                    throw new BadRequestException("You cannot review a hotel unless you have completed a stay.");
                 }
 
                 // Map DTO to entity and set values
@@ -69,20 +95,15 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.CreateReview
                 await _unitOfWork.Reviews.AddAsync(review, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                // Get the review with includes for mapping
-                var createdReview = await _unitOfWork.Reviews.GetByIdAsync(
-                    review.Id,
-                    cancellationToken,
-                    r => r.User,
-                    r => r.Hotel
-                );
-
-                // Map entity back to DTO for response
-                var reviewDto = _mapper.Map<ReviewDto>(createdReview);
+                // Retrieve DTO using ProjectTo
+                var reviewDto = await _unitOfWork.Reviews
+                    .Query()
+                    .Where(r => r.Id == review.Id)
+                    .ProjectTo<ReviewDto>(_mapper.ConfigurationProvider)
+                    .FirstOrDefaultAsync(cancellationToken);
 
                 Log.Information("Review created successfully with ID {ReviewId} for user {UserId} on hotel {HotelId}",
                     review.Id, review.UserId, review.HotelId);
-                Log.Information("Completed {HandlerName} successfully", nameof(CreateReviewCommandHandler));
 
                 return ApiResponse<ReviewDto>.SuccessResponse(reviewDto, "Review created successfully.");
             }

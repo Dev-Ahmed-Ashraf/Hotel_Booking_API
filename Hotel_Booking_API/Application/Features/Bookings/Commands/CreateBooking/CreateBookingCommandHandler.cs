@@ -58,6 +58,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.CreateBooking
                     room.Id,
                     request.CreateBookingDto.CheckInDate,
                     request.CreateBookingDto.CheckOutDate,
+                    excludeBookingId: null,
                     cancellationToken
                 );
 

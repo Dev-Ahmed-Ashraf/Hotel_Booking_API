@@ -62,17 +62,17 @@ namespace Hotel_Booking_API.Infrastructure.Repositories
             return Task.CompletedTask;
         }
 
-        public virtual async Task<bool> ExistsAsync(int id)
-        {
-            return await _dbSet.AnyAsync(e => e.Id == id);
-        }
-
         public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null)
         {
             if (predicate == null)
                 return await _dbSet.CountAsync();
 
             return await _dbSet.CountAsync(predicate);
+        }
+
+        public IQueryable<T> Query()
+        {
+            return _context.Set<T>().AsQueryable();
         }
 
     }

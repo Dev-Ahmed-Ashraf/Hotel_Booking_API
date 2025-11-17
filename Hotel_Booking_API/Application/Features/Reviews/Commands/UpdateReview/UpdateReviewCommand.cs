@@ -11,6 +11,7 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.UpdateReview
     public class UpdateReviewCommand : IRequest<ApiResponse<ReviewDto>>
     {
         public int Id { get; set; }
+        public int UserId { get; set; }
         public UpdateReviewDto UpdateReviewDto { get; set; } = null!;
     }
 }

@@ -61,10 +61,12 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.ChangeBooking
                 // Prevent Confirm unless room still available
                 if (newStatus == BookingStatus.Confirmed)
                 {
+                    
                     bool available = await _unitOfWork.Rooms.IsRoomAvailableAsync(
                         booking.RoomId,
                         booking.CheckInDate,
                         booking.CheckOutDate,
+                        excludeBookingId: booking.Id,
                         cancellationToken
                     );
 

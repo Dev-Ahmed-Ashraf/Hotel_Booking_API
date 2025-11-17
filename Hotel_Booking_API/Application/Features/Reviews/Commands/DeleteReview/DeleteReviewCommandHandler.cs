@@ -19,12 +19,6 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.DeleteReview
             _unitOfWork = unitOfWork;
         }
 
-        /// <summary>
-        /// Handles the review deletion request by validating business rules and removing the review.
-        /// </summary>
-        /// <param name="request">The delete review command containing review ID and deletion options</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing success message or error message</returns>
         public async Task<ApiResponse<string>> Handle(DeleteReviewCommand request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(DeleteReviewCommandHandler), request);
@@ -46,18 +40,21 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.DeleteReview
                     throw new BadRequestException($"Review with ID {request.Id} is already deleted.");
                 }
 
+                if (review.UserId != request.UserId)
+                {
+                    throw new ForbiddenException("You cannot delete a review that does not belong to you.");
+                }
+
+
                 // Perform deletion based on request
                 if (request.IsSoft)
                 {
-                    // Soft delete: mark as deleted but keep the record
                     review.IsDeleted = true;
                     review.UpdatedAt = DateTime.UtcNow;
-                    await _unitOfWork.Reviews.UpdateAsync(review);
                     Log.Information("Review soft deleted successfully with ID {ReviewId}", review.Id);
                 }
                 else
                 {
-                    // Hard delete: permanently remove the record
                     await _unitOfWork.Reviews.DeleteAsync(review);
                     Log.Information("Review permanently deleted with ID {ReviewId}", review.Id);
                 }

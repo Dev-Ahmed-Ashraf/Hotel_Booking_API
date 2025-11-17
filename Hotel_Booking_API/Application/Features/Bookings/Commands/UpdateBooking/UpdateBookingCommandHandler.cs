@@ -76,6 +76,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Commands.UpdateBooking
                         booking.RoomId,
                         booking.CheckInDate,
                         booking.CheckOutDate,
+                        excludeBookingId: booking.Id,
                         cancellationToken
                 );
 

@@ -4,6 +4,7 @@ using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Hotel_Booking_API.Application.Features.Reviews.Commands.UpdateReview
@@ -23,12 +24,6 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.UpdateReview
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the review update request by validating business rules and persisting changes.
-        /// </summary>
-        /// <param name="request">The update review command containing review ID and update details</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing the updated review details or error message</returns>
         public async Task<ApiResponse<ReviewDto>> Handle(UpdateReviewCommand request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(UpdateReviewCommandHandler), request);
@@ -36,12 +31,7 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.UpdateReview
             try
             {
                 // Get the existing review with related entities
-                var review = await _unitOfWork.Reviews.GetByIdAsync(
-                    request.Id,
-                    cancellationToken,
-                    r => r.User,
-                    r => r.Hotel
-                );
+                var review = await _unitOfWork.Reviews.GetByIdAsync(request.Id, cancellationToken);
 
                 if (review is null || review.IsDeleted)
                 {
@@ -49,14 +39,14 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.UpdateReview
                     throw new NotFoundException("Review", request.Id);
                 }
 
-                var dto = request.UpdateReviewDto;
-
-                // Validate rating if provided
-                if (dto.Rating.HasValue && (dto.Rating.Value < 1 || dto.Rating.Value > 5))
+                // Only review owner can update
+                if (review.UserId != request.UserId)
                 {
-                    Log.Warning("Invalid rating provided: {Rating}", dto.Rating.Value);
-                    throw new BadRequestException("Rating must be between 1 and 5.");
+                    Log.Warning("Unauthorized update attempt: User {UserId} attempted to modify Review {ReviewId}", request.UserId, review.Id);
+                    throw new ForbiddenException("You are not allowed to update this review.");
                 }
+
+                var dto = request.UpdateReviewDto;
 
                 // Apply partial updates - only update fields that are provided
                 if (dto.Rating.HasValue)
@@ -73,14 +63,18 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.UpdateReview
                 review.UpdatedAt = DateTime.UtcNow;
 
                 // Save changes
-                await _unitOfWork.Reviews.UpdateAsync(review);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+                // Re-load with includes for mapping
+                var reviewWithIncludes = await _unitOfWork.Reviews.Query()
+                    .Include(r => r.User)
+                    .Include(r => r.Hotel)
+                    .FirstOrDefaultAsync(r => r.Id == review.Id, cancellationToken);
+
                 // Map entity back to DTO for response
-                var reviewDto = _mapper.Map<ReviewDto>(review);
+                var reviewDto = _mapper.Map<ReviewDto>(reviewWithIncludes);
 
                 Log.Information("Review updated successfully with ID {ReviewId}", review.Id);
-                Log.Information("Completed {HandlerName} successfully", nameof(UpdateReviewCommandHandler));
 
                 return ApiResponse<ReviewDto>.SuccessResponse(reviewDto, "Review updated successfully.");
             }

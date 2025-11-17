@@ -1,3 +1,4 @@
+using Hotel_Booking.Infrastructure.Extensions;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Application.Features.Reviews.Commands.CreateReview;
@@ -23,72 +24,17 @@ namespace Hotel_Booking_API.Controllers
     [Route("api/[controller]")]
     public class ReviewsController : ControllerBase
     {
+
+        #region Fields and Constructor
         private readonly IMediator _mediator;
 
         public ReviewsController(IMediator mediator)
         {
             _mediator = mediator;
         }
+        #endregion
 
-        /// <summary>
-        /// Creates a new review in the system.
-        /// </summary>
-        /// <param name="createReviewDto">The review details to create</param>
-        /// <param name="userId">The ID of the user creating the review</param>
-        /// <returns>Returns the created review details wrapped in an ApiResponse</returns>
-        /// <remarks>
-        /// Requires Customer or Admin role authorization.
-        /// Validates user and hotel existence and rating constraints.
-        /// </remarks>
-        /// <response code="201">Review created successfully.</response>
-        /// <response code="400">Validation failed or invalid rating.</response>
-        /// <response code="401">Unauthorized — the request requires authentication.</response>
-        [HttpPost]
-        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
-        [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<ApiResponse<ReviewDto>>> CreateReview(
-            [FromBody] CreateReviewDto createReviewDto,
-            [FromQuery, Range(1, int.MaxValue)] int userId)
-        {
-            var command = new CreateReviewCommand
-            {
-                CreateReviewDto = createReviewDto,
-                UserId = userId
-            };
-
-            var result = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetReviewById), new { id = result.Data?.Id }, result);
-        }
-
-        /// <summary>
-        /// Retrieves a specific review by its unique identifier.
-        /// </summary>
-        /// <param name="id">The unique identifier of the review.</param>
-        /// <returns>Returns the review details wrapped in an ApiResponse</returns>
-        /// <remarks>
-        /// Returns detailed review information including hotel and user details.
-        /// </remarks>
-        /// <response code="200">Review retrieved successfully.</response>
-        /// <response code="404">Review not found.</response>
-        /// <response code="401">Unauthorized — the request requires authentication.</response>
-        [HttpGet("{id}")]
-        [Authorize]
-        [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<ApiResponse<ReviewDto>>> GetReviewById([FromRoute, Range(1, int.MaxValue)] int id)
-        {
-            var query = new GetReviewByIdQuery { Id = id };
-            var result = await _mediator.Send(query);
-
-            if (!result.Success)
-                return NotFound(result);
-
-            return Ok(result);
-        }
-
+        #region Get Endpoints
         /// <summary>
         /// Retrieves a paginated list of reviews with optional filtering.
         /// </summary>
@@ -108,7 +54,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Invalid filter or pagination parameters.</response>
         /// <response code="401">Unauthorized — the request requires admin privileges.</response>
         [HttpGet]
-        [Authorize(Roles = nameof(UserRole.Admin))]
+        ////[Authorize(Roles = nameof(UserRole.Admin))]
         [ProducesResponseType(typeof(ApiResponse<PagedList<ReviewDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PagedList<ReviewDto>>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -141,74 +87,32 @@ namespace Hotel_Booking_API.Controllers
         }
 
         /// <summary>
-        /// Updates an existing review.
+        /// Retrieves a specific review by its unique identifier.
         /// </summary>
-        /// <param name="id">The ID of the review to update.</param>
-        /// <param name="updateReviewDto">The fields you want to update.</param>
-        /// <returns>Returns the updated review details wrapped in an ApiResponse</returns>
+        /// <param name="id">The unique identifier of the review.</param>
+        /// <returns>Returns the review details wrapped in an ApiResponse</returns>
         /// <remarks>
-        /// Requires Customer or Admin role authorization.
-        /// Supports partial updates - only provided fields will be updated.
-        /// Users can only update their own reviews.
+        /// Returns detailed review information including hotel and user details.
         /// </remarks>
-        /// <response code="200">Review updated successfully.</response>
-        /// <response code="400">Validation failed or review cannot be updated.</response>
+        /// <response code="200">Review retrieved successfully.</response>
         /// <response code="404">Review not found.</response>
-        /// <response code="401">Unauthorized — the request requires Customer or admin privileges.</response>
-        [HttpPatch("{id}")]
-        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        /// <response code="401">Unauthorized — the request requires authentication.</response>
+        [HttpGet("{id}")]
+        ////[Authorize]
         [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> UpdateReview(
-            [FromRoute, Range(1, int.MaxValue)] int id,
-            [FromBody] UpdateReviewDto updateReviewDto)
+        public async Task<ActionResult<ApiResponse<ReviewDto>>> GetReviewById([FromRoute, Range(1, int.MaxValue)] int id)
         {
-            var command = new UpdateReviewCommand
-            {
-                Id = id,
-                UpdateReviewDto = updateReviewDto
-            };
+            var query = new GetReviewByIdQuery { Id = id };
+            var result = await _mediator.Send(query);
 
-            var result = await _mediator.Send(command);
+            if (!result.Success)
+                return NotFound(result);
+
             return Ok(result);
         }
 
-        /// <summary>
-        /// Deletes a review by ID.
-        /// </summary>
-        /// <param name="id">Review ID to delete</param>
-        /// <param name="isSoft">If true, marks the review as deleted instead of removing it permanently (default: true)</param>
-        /// <returns>204 No Content if successful, 404 if not found</returns>
-        /// <remarks>
-        /// Requires Owner or Admin role authorization.
-        /// By default, performs soft delete to maintain data integrity.
-        /// Users can only delete their own reviews.
-        /// </remarks>
-        /// <response code="204">Review deleted successfully.</response>
-        /// <response code="404">Review not found.</response>
-        /// <response code="400">Review already deleted.</response>
-        /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
-        [HttpDelete("{id}")]
-        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> DeleteReview(
-            [FromRoute, Range(1, int.MaxValue)] int id,
-            [FromQuery] bool isSoft = true)
-        {
-            var command = new DeleteReviewCommand
-            {
-                Id = id,
-                IsSoft = isSoft
-            };
-
-            var result = await _mediator.Send(command);
-            return Ok(result);
-        }
 
         /// <summary>
         /// Retrieves all reviews for a specific hotel.
@@ -258,7 +162,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Invalid pagination parameters.</response>
         /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
         [HttpGet("user/{userId}")]
-        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        ////[Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
         [ProducesResponseType(typeof(ApiResponse<PagedList<ReviewDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PagedList<ReviewDto>>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -276,5 +180,122 @@ namespace Hotel_Booking_API.Controllers
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+        #endregion
+
+        #region Post Endpoints
+        /// <summary>
+        /// Creates a new review in the system.
+        /// </summary>
+        /// <param name="createReviewDto">The review details to create</param>
+        /// <param name="userId">The ID of the user creating the review</param>
+        /// <returns>Returns the created review details wrapped in an ApiResponse</returns>
+        /// <remarks>
+        /// Requires Customer or Admin role authorization.
+        /// Validates user and hotel existence and rating constraints.
+        /// </remarks>
+        /// <response code="201">Review created successfully.</response>
+        /// <response code="400">Validation failed or invalid rating.</response>
+        /// <response code="401">Unauthorized — the request requires authentication.</response>
+        [HttpPost]
+        ////[Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<ReviewDto>>> CreateReview(
+            [FromBody] CreateReviewDto createReviewDto,
+            [FromQuery, Range(1, int.MaxValue)] int userId)
+        {
+            var command = new CreateReviewCommand
+            {
+                CreateReviewDto = createReviewDto,
+                UserId = userId
+            };
+
+            var result = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetReviewById), new { id = result.Data?.Id }, result);
+        }
+        #endregion
+
+        #region patch Endpoints
+        /// <summary>
+        /// Updates an existing review.
+        /// </summary>
+        /// <param name="id">The ID of the review to update.</param>
+        /// <param name="updateReviewDto">The fields to update in the review. Supports partial updates.</param>
+        /// <returns>
+        /// Returns a <see cref="ReviewDto"/> wrapped inside <see cref="ApiResponse{T}"/> 
+        /// if the update operation succeeds.
+        /// </returns>
+        /// <response code="200">Review updated successfully.</response>
+        /// <response code="400">Invalid data was provided (e.g., rating outside allowed range).</response>
+        /// <response code="404">The specified review was not found.</response>
+        /// <response code="401">Unauthorized — only authenticated users can access this endpoint.</response>
+        /// <response code="403">Forbidden — users can only update their own reviews.</response>
+        /// <remarks>
+        /// This endpoint requires authentication.  
+        /// Only the owner of the review (or an admin) can update the review.  
+        /// Supports partial update operations (PATCH).
+        /// </remarks>
+        [HttpPatch("{id}")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        public async Task<IActionResult> UpdateReview(
+            [FromRoute, Range(1, int.MaxValue)] int id,
+            [FromBody] UpdateReviewDto updateReviewDto)
+        {
+            var userId = User.GetUserId();
+
+            var command = new UpdateReviewCommand
+            {
+                Id = id,
+                UserId = userId,
+                UpdateReviewDto = updateReviewDto
+            };
+
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+        #endregion
+
+        #region Delete Endpoints
+        /// <summary>
+        /// Deletes a review by ID.
+        /// </summary>
+        /// <param name="id">Review ID to delete</param>
+        /// <param name="isSoft">If true, marks the review as deleted instead of removing it permanently (default: true)</param>
+        /// <returns>204 No Content if successful, 404 if not found</returns>
+        /// <remarks>
+        /// Requires Owner or Admin role authorization.
+        /// By default, performs soft delete to maintain data integrity.
+        /// Users can only delete their own reviews.
+        /// </remarks>
+        /// <response code="204">Review deleted successfully.</response>
+        /// <response code="404">Review not found.</response>
+        /// <response code="400">Review already deleted.</response>
+        /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
+        [HttpDelete("{id}")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> DeleteReview(
+            [FromRoute, Range(1, int.MaxValue)] int id,
+            [FromQuery] bool isSoft = true)
+        {
+            // Extract UserId from JWT
+            var userId = User.GetUserId();
+
+            var command = new DeleteReviewCommand
+            {
+                Id = id,
+                UserId = userId,
+                IsSoft = isSoft
+            };
+
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+        #endregion
+
     }
 }

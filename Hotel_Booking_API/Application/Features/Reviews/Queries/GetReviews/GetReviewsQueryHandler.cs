@@ -25,13 +25,6 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Queries.GetReviews
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the get reviews query by applying filters and pagination.
-        /// All validation is handled by the GetReviewsValidator through the MediatR pipeline.
-        /// </summary>
-        /// <param name="request">The query containing pagination and search parameters</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing paginated list of reviews or error message</returns>
         public async Task<ApiResponse<PagedList<ReviewDto>>> Handle(GetReviewsQuery request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(GetReviewsQueryHandler), request);
@@ -40,16 +33,12 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Queries.GetReviews
             {
                 // Start with base query including related entities
                 IQueryable<Review> query = _context.Reviews
-                    .IgnoreQueryFilters()
-                    .Include(r => r.User)
-                    .Include(r => r.Hotel)
-                    .AsSplitQuery()
                     .AsNoTracking()
                     .AsQueryable();
 
                 // Filter out soft-deleted reviews unless explicitly requested
-                if (!request.IncludeDeleted)
-                    query = query.Where(r => !r.IsDeleted);
+                if (request.IncludeDeleted)
+                    query = query.IgnoreQueryFilters();
 
                 // Apply search filters if provided
                 if (request.Search is not null)
@@ -76,12 +65,15 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Queries.GetReviews
                 // Get total count for pagination
                 var totalCount = await query.CountAsync(cancellationToken);
 
-                // Apply pagination and ordering
-                var reviews = await query
+                // Projection BEFORE pagination
+                var projected = query
                     .OrderByDescending(r => r.CreatedAt)
+                    .ProjectTo<ReviewDto>(_mapper.ConfigurationProvider);
+
+                // Pagination
+                var reviews = await projected
                     .Skip((request.Pagination.PageNumber - 1) * request.Pagination.PageSize)
                     .Take(request.Pagination.PageSize)
-                    .ProjectTo<ReviewDto>(_mapper.ConfigurationProvider)
                     .ToListAsync(cancellationToken);
 
                 // Create paginated result

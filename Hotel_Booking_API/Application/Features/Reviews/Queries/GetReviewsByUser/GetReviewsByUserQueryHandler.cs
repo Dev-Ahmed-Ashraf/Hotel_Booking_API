@@ -26,47 +26,40 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Queries.GetReviewsByUse
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Handles the get reviews by user query by validating user exists and retrieving reviews.
-        /// </summary>
-        /// <param name="request">The query containing user ID and pagination parameters</param>
-        /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>ApiResponse containing paginated list of reviews or error message</returns>
         public async Task<ApiResponse<PagedList<ReviewDto>>> Handle(GetReviewsByUserQuery request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(GetReviewsByUserQueryHandler), request);
 
             try
             {
-                // Validate that the user exists
-                var user = await _context.Users
-                    .IgnoreQueryFilters()
-                    .FirstOrDefaultAsync(u => u.Id == request.UserId && !u.IsDeleted, cancellationToken);
+                // Validate user exists
+                var userExists = await _context.Users
+                    .AsNoTracking()
+                    .AnyAsync(u => u.Id == request.UserId && !u.IsDeleted, cancellationToken);
 
-                if (user == null)
+                if (!userExists)
                 {
                     Log.Warning("User not found or deleted: {UserId}", request.UserId);
                     throw new NotFoundException("User", request.UserId);
                 }
 
-                // Query reviews filtered by user ID
-                IQueryable<Review> query = _context.Reviews
-                    .IgnoreQueryFilters()
-                    .Include(r => r.User)
-                    .Include(r => r.Hotel)
-                    .Where(r => r.UserId == request.UserId && !r.IsDeleted)
+                // Query only reviews for this user
+                var query = _context.Reviews
                     .AsNoTracking()
-                    .AsQueryable();
+                    .Where(r => r.UserId == request.UserId && !r.IsDeleted);
 
                 // Get total count for pagination
                 var totalCount = await query.CountAsync(cancellationToken);
 
-                // Apply pagination and ordering
-                var reviews = await query
+                // Order + projection BEFORE pagination
+                var projected = query
                     .OrderByDescending(r => r.CreatedAt)
+                    .ProjectTo<ReviewDto>(_mapper.ConfigurationProvider);
+
+                // Pagination
+                var reviews = await projected
                     .Skip((request.Pagination.PageNumber - 1) * request.Pagination.PageSize)
                     .Take(request.Pagination.PageSize)
-                    .ProjectTo<ReviewDto>(_mapper.ConfigurationProvider)
                     .ToListAsync(cancellationToken);
 
                 // Create paginated result

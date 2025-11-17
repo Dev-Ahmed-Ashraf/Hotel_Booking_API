@@ -27,12 +27,6 @@ namespace Hotel_Booking_API.Application.DTOs
         public string? Comment { get; set; }
     }
 
-    public class HotelReviewsDto
-    {
-        public int HotelId { get; set; }
-        public PaginationParameters? Pagination { get; set; }
-    }
-
     public class SearchReviewsDto
     {
         public int? HotelId { get; set; }

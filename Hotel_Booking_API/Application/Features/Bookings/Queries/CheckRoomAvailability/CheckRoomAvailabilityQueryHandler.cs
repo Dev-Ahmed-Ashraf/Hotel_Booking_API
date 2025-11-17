@@ -40,6 +40,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.CheckRoomAvail
                     request.RoomId,
                     request.CheckInDate,
                     request.CheckOutDate,
+                    excludeBookingId: null,
                     cancellationToken
                 );
 

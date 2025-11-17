@@ -42,6 +42,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.CalculateBooki
                     request.RoomId,
                     request.CheckInDate,
                     request.CheckOutDate,
+                    excludeBookingId: null,
                     cancellationToken
                 );
 

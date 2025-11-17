@@ -19,20 +19,33 @@ namespace Hotel_Booking_API.Infrastructure.Repositories
             int roomId,
             DateTime startDate,
             DateTime endDate,
+            int? excludeBookingId = null,
             CancellationToken cancellationToken = default)
         {
-            return !await _dbContext.Bookings
+            var query = _dbContext.Bookings
                 .AsNoTracking()
                 .Where(b =>
                     b.RoomId == roomId &&
                     !b.IsDeleted &&
                     b.Status != BookingStatus.Cancelled &&
-                    b.Status != BookingStatus.Completed &&
-                    b.CheckInDate < endDate &&    // Overlap logic
-                    b.CheckOutDate > startDate
-                )
-                .AnyAsync(cancellationToken);
+                    b.Status != BookingStatus.Completed
+                );
+
+            // Exclude current booking to avoid self-conflict
+            if (excludeBookingId.HasValue)
+            {
+                query = query.Where(b => b.Id != excludeBookingId.Value);
+            }
+
+            // Overlap logic
+            query = query.Where(b =>
+                b.CheckInDate < endDate &&
+                b.CheckOutDate > startDate
+            );
+
+            return !await query.AnyAsync(cancellationToken);
         }
+
 
     }
 }
