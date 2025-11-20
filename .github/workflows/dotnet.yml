@@ -2,12 +2,11 @@ name: .NET CI / Docker Publish
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
-
   build:
     runs-on: windows-latest
 
@@ -27,10 +26,10 @@ jobs:
         run: dotnet build "Hotel_Booking_API/Hotel_Booking_API.csproj" --configuration Release --no-restore
 
       - name: Run Unit Tests
-        run: dotnet test "tests/Hotel_Booking.UnitTests" --configuration Release --no-build
+        run: dotnet test "tests/Hotel_Booking_API.UnitTests" --configuration Release --no-build
 
       - name: Run Integration Tests
-        run: dotnet test "tests/Hotel_Booking.IntegrationTests" --configuration Release --no-build
+        run: dotnet test "tests/Hotel_Booking_API.IntegrationTests" --configuration Release --no-build
 
       - name: Publish
         run: dotnet publish "Hotel_Booking_API/Hotel_Booking_API.csproj" -c Release -o out
@@ -40,7 +39,6 @@ jobs:
         with:
           name: hotel-booking-api
           path: out
-
 
   docker_publish:
     runs-on: ubuntu-latest
