@@ -7,6 +7,10 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <LangVersion>latest</LangVersion>
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +24,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Hotel_Booking_API\Hotel_Booking_API.csproj" />
+    <Content Include="$(MSBuildThisFileDirectory)..\..\Hotel_Booking_API\**\*.json" 
+             Link="%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
