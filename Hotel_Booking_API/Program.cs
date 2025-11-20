@@ -1,6 +1,7 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Hotel_Booking_API.Application.Common.Behaviors;
 using Hotel_Booking_API.Application.Common.Interfaces;
+using Hotel_Booking_API.Application.Features.Payments.Services;
 using Hotel_Booking_API.Application.Mappings;
 using Hotel_Booking_API.Application.Validators.AuthValidators;
 using Hotel_Booking_API.Domain.Interfaces;
@@ -26,7 +27,7 @@ namespace Hotel_Booking_API
     {
         public static void Main(string[] args)
         {
-            // Temporary bootstrap logger (logs during startup)
+            // Early bootstrap logger (logs before app fully loads)
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
                 .CreateBootstrapLogger();
@@ -35,20 +36,25 @@ namespace Hotel_Booking_API
             {
                 Log.Information("Starting Hotel Booking API");
 
-                // Create the web app builder (loads all configurations automatically)
+                // Build web application (loads configuration, DI, hosting)
                 var builder = WebApplication.CreateBuilder(args);
 
-                // Proper Serilog configuration (uses builder.Configuration)
+                // Configure Serilog using appsettings.json
                 Log.Logger = new LoggerConfiguration()
                     .ReadFrom.Configuration(builder.Configuration)
                     .CreateLogger();
 
                 builder.Host.UseSerilog();
 
-                // Configure services & middleware as usual
+                // Register all services in DI container
                 ConfigureServices(builder.Services, builder.Configuration);
+
+                // Build the app
                 var app = builder.Build();
+
+                // Configure middleware pipeline
                 ConfigureMiddleware(app);
+
                 app.Run();
             }
             catch (Exception ex)
@@ -62,100 +68,132 @@ namespace Hotel_Booking_API
         }
 
         /// <summary>
-        /// Configures the application services and dependency injection container
+        /// Registers all application services in the DI container.
         /// </summary>
-        /// <param name="services">The service collection to add services to</param>
-        /// <param name="configuration">The application configuration</param>
         private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
-            // Configure Entity Framework Core with SQL Server
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            // -----------------------------
+            // Database Configuration
+            // -----------------------------
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            // Register generic repository and unit of work patterns
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(connectionString));
+
+            // -----------------------------
+            // Repositories & Unit of Work
+            // -----------------------------
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IRoomRepository, RoomRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            // Register JWT service for authentication
+            // -----------------------------
+            // Authentication: JWT Service
+            // -----------------------------
             services.AddScoped<IJwtService, JwtService>();
 
-            // Stripe options and service
+            // -----------------------------
+            // Stripe Payment Integration
+            // -----------------------------
             services.Configure<StripeOptions>(configuration.GetSection("Stripe"));
             services.AddSingleton<IStripeService, StripeService>();
+            services.AddScoped<IPaymentUpdateService, PaymentUpdateService>();
 
-            // Payment update service
-            services.AddScoped<Hotel_Booking_API.Application.Features.Payments.Services.IPaymentUpdateService, Hotel_Booking_API.Application.Features.Payments.Services.PaymentUpdateService>();
-
-            // Email service configuration
+            // -----------------------------
+            // Email Service
+            // -----------------------------
             services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
             services.AddScoped<IEmailService, EmailService>();
 
-            // Configure MediatR for CQRS pattern
+            // -----------------------------
+            // MediatR (CQRS)
+            // -----------------------------
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
-            // Configure AutoMapper for object mapping
+            // -----------------------------
+            // AutoMapper
+            // -----------------------------
             services.AddAutoMapper(typeof(MappingProfile));
 
-            // Configure FluentValidation with custom behaviors
+            // -----------------------------
+            // FluentValidation + Pipeline Behaviors
+            // -----------------------------
             services.AddValidatorsFromAssembly(typeof(Program).Assembly);
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
 
+            // -----------------------------
+            // Controllers + JSON Settings
+            // -----------------------------
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
                 });
 
-            // Response compression
+            // -----------------------------
+            // Response Compression
+            // -----------------------------
             services.AddResponseCompression(options =>
             {
                 options.EnableForHttps = true;
                 options.Providers.Add<GzipCompressionProvider>();
             });
 
-            // Output caching
+            // -----------------------------
+            // Output Caching
+            // -----------------------------
             services.AddOutputCache();
 
-            // Rate limiting (fixed window per IP)
+            // -----------------------------
+            // Rate Limiting (Per-IP)
+            // -----------------------------
             services.AddRateLimiter(options =>
             {
                 options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
                 {
                     var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
                     return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 100,
+                        PermitLimit = 100,       // Max 100 requests
                         Window = TimeSpan.FromMinutes(1),
                         QueueLimit = 0,
                         AutoReplenishment = true
                     });
                 });
+
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             });
 
-            // Health checks
+            // -----------------------------
+            // Health Checks
+            // -----------------------------
             services.AddHealthChecks();
 
-            // Memory cache and cache settings
+            // -----------------------------
+            // Memory Cache
+            // -----------------------------
             services.Configure<CacheSettings>(configuration.GetSection("MemoryCache"));
             services.AddMemoryCache(options =>
             {
                 var settings = configuration.GetSection("MemoryCache").Get<CacheSettings>();
-                if (settings != null && settings.SizeLimitMB > 0)
+                if (settings?.SizeLimitMB > 0)
                 {
                     options.SizeLimit = settings.SizeLimitMB * 1024L * 1024L;
                 }
             });
+
             services.AddSingleton<ICacheService, MemoryCacheService>();
             services.AddSingleton<ICacheInvalidator, CacheInvalidator>();
 
-
-            // Configure CORS (Cross-Origin Resource Sharing)
+            // -----------------------------
+            // CORS Configuration
+            // -----------------------------
             var corsOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new string[0];
+
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowSpecificOrigins", policy =>
@@ -167,17 +205,15 @@ namespace Hotel_Booking_API
                 });
             });
 
-            // Configure JWT authentication
+            // -----------------------------
+            // JWT Authentication
+            // -----------------------------
             var jwtSettings = configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings["SecretKey"]!;
             var issuer = jwtSettings["Issuer"]!;
             var audience = jwtSettings["Audience"]!;
 
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -189,10 +225,10 @@ namespace Hotel_Booking_API
                     ValidIssuer = issuer,
                     ValidAudience = audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-                    ClockSkew = TimeSpan.Zero // No clock skew for strict token validation
+                    ClockSkew = TimeSpan.Zero  // No time tolerance
                 };
 
-                // ????? ???? ??? ?????
+                // Custom Unauthorized / Forbidden messages
                 options.Events = new JwtBearerEvents
                 {
                     OnChallenge = context =>
@@ -201,59 +237,44 @@ namespace Hotel_Booking_API
                         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                         context.Response.ContentType = "application/json";
 
-                        var result = System.Text.Json.JsonSerializer.Serialize(new
-                        {
-                            success = false,
-                            message = "Authentication is required. Please login to continue."
-                        });
-
-                        return context.Response.WriteAsync(result);
+                        return context.Response.WriteAsync(
+                            System.Text.Json.JsonSerializer.Serialize(new
+                            {
+                                success = false,
+                                message = "Authentication is required. Please login to continue."
+                            }));
                     },
+
                     OnForbidden = context =>
                     {
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
                         context.Response.ContentType = "application/json";
 
-                        var path = context.Request.Path.Value?.ToLower();
-                        string message;
-
-                        // ????? ??????? ??? ??? endpoint
-                        if (path.Contains("/bookings"))
-                        {
-                            message = "Only Admins and Customers can perform this action.";
-                        }
-                        else if (path.Contains("/hotels"))
-                        {
-                            message = "Only Admins can manage hotels.";
-                        }
-                        else
-                        {
-                            message = "You do not have permission to perform this action.";
-                        }
-
-                        var result = System.Text.Json.JsonSerializer.Serialize(new
-                        {
-                            success = false,
-                            message
-                        });
-
-                        return context.Response.WriteAsync(result);
+                        return context.Response.WriteAsync(
+                            System.Text.Json.JsonSerializer.Serialize(new
+                            {
+                                success = false,
+                                message = "You do not have permission to perform this action."
+                            }));
                     }
                 };
             });
 
-            // Add authorization services
             services.AddAuthorization();
 
-            // Configure API versioning
+            // -----------------------------
+            // API Versioning
+            // -----------------------------
             services.AddApiVersioning(options =>
             {
                 options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
                 options.AssumeDefaultVersionWhenUnspecified = true;
-                options.ReportApiVersions = true; // Returns API version in response headers
+                options.ReportApiVersions = true;
             });
 
-            // Configure Swagger/OpenAPI documentation
+            // -----------------------------
+            // Swagger / OpenAPI
+            // -----------------------------
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
             {
@@ -261,18 +282,13 @@ namespace Hotel_Booking_API
                 {
                     Title = "Hotel Booking API",
                     Version = "v1",
-                    Description = "A professional hotel booking API with full features",
-                    Contact = new OpenApiContact
-                    {
-                        Name = "Hotel Booking API Team",
-                        Email = "support@hotelbooking.com"
-                    }
+                    Description = "A professional hotel booking API with full features"
                 });
 
-                // Add JWT authentication to Swagger
+                // JWT Auth in Swagger
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Description = "JWT Authorization. Example: \"Bearer {token}\"",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,
@@ -293,85 +309,79 @@ namespace Hotel_Booking_API
                         Array.Empty<string>()
                     }
                 });
-                // Include XML documentation for API endpoints
+
+                // Include XML Comments
                 var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 if (File.Exists(xmlPath))
-                {
                     c.IncludeXmlComments(xmlPath);
-                }
-
             });
         }
 
         /// <summary>
-        /// Configures the HTTP request pipeline
+        /// Configures the HTTP request pipeline (middleware).
         /// </summary>
-        /// <param name="app">The web application instance</param>
         private static void ConfigureMiddleware(WebApplication app)
         {
-            // Global exception handling middleware (must be first in pipeline)
+            // Must come first: Global exception handler
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-            // Configure the HTTP request pipeline based on environment
+            // Swagger UI
             if (app.Environment.IsDevelopment())
             {
-                // Enable Swagger UI in development
                 app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Hotel Booking API V1");
-                    //c.RoutePrefix = string.Empty; // Serve Swagger UI at the root
-                });
+                app.UseSwaggerUI();
             }
 
-            // Redirect HTTP to HTTPS for security
+            // Enforce HTTPS
             app.UseHttpsRedirection();
 
             // Serilog request logging
             app.UseSerilogRequestLogging();
 
-            // Correlation ID
+            // Add correlation ID for request tracking
             app.Use(async (context, next) =>
             {
                 const string headerName = "X-Correlation-ID";
-                if (!context.Request.Headers.TryGetValue(headerName, out var correlationId) || string.IsNullOrWhiteSpace(correlationId))
+
+                if (!context.Request.Headers.TryGetValue(headerName, out var correlationId) ||
+                    string.IsNullOrWhiteSpace(correlationId))
                 {
                     correlationId = Guid.NewGuid().ToString();
                     context.Request.Headers[headerName] = correlationId;
                 }
-                context.Response.Headers[headerName] = correlationId!
-                    .ToString();
+
+                context.Response.Headers[headerName] = correlationId!;
                 await next();
             });
 
-            // Enable CORS with the configured policy
+            // CORS
             app.UseCors("AllowSpecificOrigins");
 
-            // Response compression
+            // Compression
             app.UseResponseCompression();
 
-            // Rate limiting
+            // Rate Limiting
             app.UseRateLimiter();
 
-            // Output cache
+            // Output Cache
             app.UseOutputCache();
 
-            // Add authentication and authorization middleware
-            // Note: Order is important - Authentication must come before Authorization
+            // Authentication → Authorization (order matters)
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Map controller routes
+            // Map API controllers
             app.MapControllers();
 
-            // Health checks
+            // Health checks endpoint
             app.MapHealthChecks("/health");
 
-            // Apply migrations in Development only
+            // Auto apply EF migrations in Development
             using (var scope = app.Services.CreateScope())
             {
                 var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
+
                 if (env.IsDevelopment())
                 {
                     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

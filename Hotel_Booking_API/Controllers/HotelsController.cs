@@ -128,7 +128,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Validation failed — one or more fields are invalid.</response>
         /// <response code="401">Unauthorized — the request requires admin privileges.</response>
         [HttpPost]
-        //[Authorize(Roles = nameof(UserRole.Admin))]
+        [Authorize(Roles = nameof(UserRole.Admin))]
         [ProducesResponseType(typeof(ApiResponse<HotelDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<HotelDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -165,7 +165,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="404">Hotel not found.</response>
         /// <response code="401">Unauthorized — the request requires admin or hotel manager privileges.</response>
         [HttpPatch("{id}")]
-        //[Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.HotelManager)}")]
         [ProducesResponseType(typeof(ApiResponse<HotelDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<HotelDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<HotelDto>), StatusCodes.Status404NotFound)]
@@ -201,7 +201,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="404">Hotel not found.</response>
         /// <response code="401">Unauthorized – Admin only.</response>
         [HttpDelete("{id}")]
-        //[Authorize(Roles = nameof(UserRole.Admin))]
+        [Authorize(Roles = nameof(UserRole.Admin))]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status404NotFound)]

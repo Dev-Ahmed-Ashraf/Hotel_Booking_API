@@ -54,7 +54,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Invalid filter or pagination parameters.</response>
         /// <response code="401">Unauthorized — the request requires admin privileges.</response>
         [HttpGet]
-        ////[Authorize(Roles = nameof(UserRole.Admin))]
+        [Authorize(Roles = nameof(UserRole.Admin))]
         [ProducesResponseType(typeof(ApiResponse<PagedList<ReviewDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PagedList<ReviewDto>>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -98,7 +98,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="404">Review not found.</response>
         /// <response code="401">Unauthorized — the request requires authentication.</response>
         [HttpGet("{id}")]
-        ////[Authorize]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -162,7 +162,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Invalid pagination parameters.</response>
         /// <response code="401">Unauthorized — the request requires owner or admin privileges.</response>
         [HttpGet("user/{userId}")]
-        ////[Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
         [ProducesResponseType(typeof(ApiResponse<PagedList<ReviewDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PagedList<ReviewDto>>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -197,7 +197,7 @@ namespace Hotel_Booking_API.Controllers
         /// <response code="400">Validation failed or invalid rating.</response>
         /// <response code="401">Unauthorized — the request requires authentication.</response>
         [HttpPost]
-        ////[Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
+        [Authorize(Roles = $"{nameof(UserRole.Customer)},{nameof(UserRole.Admin)}")]
         [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<ReviewDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

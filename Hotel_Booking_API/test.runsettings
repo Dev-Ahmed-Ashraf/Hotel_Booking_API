@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <!-- Disable shadow copy -->
+    <DisableAppDomain>true</DisableAppDomain>
+
+    <!-- Run tests from output folder directly -->
+    <InProcDataCollectionRunSettings>
+      <InProcDataCollectors>
+        <InProcDataCollector
+          friendlyName="XPlat Code Coverage"
+          enabled="false" />
+      </InProcDataCollectors>
+    </InProcDataCollectionRunSettings>
+
+    <!-- Disable shadow copying explicitly -->
+    <DisableParallelization>true</DisableParallelization>
+  </RunConfiguration>
+</RunSettings>

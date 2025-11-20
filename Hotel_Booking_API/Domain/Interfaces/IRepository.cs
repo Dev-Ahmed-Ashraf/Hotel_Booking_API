@@ -11,7 +11,7 @@ namespace Hotel_Booking_API.Domain.Interfaces
         Task<T> AddAsync(T entity, CancellationToken cancellationToken = default);
         Task UpdateAsync(T entity);
         Task DeleteAsync(T entity);
-        Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
+        Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken ct = default);
         IQueryable<T> Query();
     }
 }

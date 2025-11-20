@@ -62,7 +62,7 @@ namespace Hotel_Booking_API.Infrastructure.Repositories
             return Task.CompletedTask;
         }
 
-        public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null)
+        public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken ct = default)
         {
             if (predicate == null)
                 return await _dbSet.CountAsync();

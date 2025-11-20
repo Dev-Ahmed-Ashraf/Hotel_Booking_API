@@ -1,98 +1,249 @@
-# Hotel Booking API (ASP.NET Core 8)
+<div align="center">
 
-A production-grade, Clean Architecture hotel booking API with CQRS (MediatR), EF Core, JWT auth, caching, and Stripe payments. Includes Docker, CI, and professional documentation.
+# 🏨 Hotel Booking System
 
-## Highlights
-- Clean Architecture (Domain, Application, Infrastructure, API)
-- CQRS with MediatR, FluentValidation, AutoMapper
-- EF Core (SQL Server) with Migrations
-- JWT Authentication and role-based Authorization
-- Serilog structured logging + request logging
-- Caching (memory), rate limiting, response compression, output caching
-- Global exception handling and consistent API envelope
-- Stripe integration (test mode)
-- Docker & GitHub Actions CI
+A modern, scalable hotel booking system built with **ASP.NET Core 8**, **Clean Architecture**, **CQRS**, and **Stripe Payments**.
 
-## Tech Stack
-- .NET 8, ASP.NET Core 8, EF Core 8
-- MediatR, FluentValidation, AutoMapper
-- Serilog, Swagger / OpenAPI
-- Stripe .NET SDK
+![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)
+![C#](https://img.shields.io/badge/C%23-239120?logo=c-sharp&logoColor=white)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Build Status](https://github.com/Dev-Ahmed-Ashraf/Hotel_Booking_API/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Dev-Ahmed-Ashraf/Hotel_Booking_API/actions)
+[![Docker Pulls](https://img.shields.io/docker/pulls/Dev-Ahmed-Ashraf/hotel-booking-api)](https://hub.docker.com/r/Dev-Ahmed-Ashraf/hotel-booking-api)
 
-## Repository Structure
-```
-Hotel_Booking_API_Project/
-├── Hotel_Booking_API/           # API project (main)
-├── tests/
-│   ├── Hotel_Booking_API.UnitTests/
-│   └── Hotel_Booking_API.IntegrationTests/
-├── .github/workflows/dotnet.yml # CI pipeline
-├── Dockerfile                   # API container
-├── docker-compose.yml           # API + SQL Server (dev)
-├── README.md                    # This file
-└── appsettings.example.json     # Example configuration
-```
+<img src="screenshots/swagger-ui-1.png" width="85%" alt="Swagger UI"/>
 
-## Quickstart (Local)
-1. Prerequisites: .NET 8 SDK, SQL Server (or Docker), PowerShell
-2. Clone and restore:
-   ```bash
-   git clone <your-repo-url>
-   cd Hotel_Booking_API_Project/Hotel_Booking_API
-   dotnet restore
-   ```
-3. Configure development settings:
-   - Copy `appsettings.example.json` to `appsettings.Development.json` and fill secrets using User Secrets or env vars.
-4. Apply migrations and run:
-   ```bash
-   dotnet ef database update
-   dotnet run
-   ```
-5. Open Swagger UI at `https://localhost:7062/swagger` (port may vary).
+</div>
 
-## Quickstart (Docker)
-1. Create a `.env` with your secrets (see Variables below).
-2. Start the stack:
-   ```bash
-   docker compose up -d --build
-   ```
-3. API: `https://localhost:8080` (proxied)
+## ✨ Key Features
 
-### docker-compose services
-- `sqlserver`: SQL Server 2022 Developer, persisted volume
-- `api`: ASP.NET Core app, depends_on database
+### For Hotel Guests
 
-## Configuration
-Sensitive values should come from env vars or User Secrets. See `appsettings.example.json`.
+- Browse and search hotels with filters
+- View room availability and pricing
+- Secure online booking with instant confirmation
+- Manage bookings and view history
+- Leave reviews and ratings
 
-Key variables:
-- ConnectionStrings__DefaultConnection
-- JwtSettings__SecretKey, JwtSettings__Issuer, JwtSettings__Audience, JwtSettings__ExpirationMinutes
-- Stripe__ApiKey, Stripe__WebhookSecret, Stripe__PublishableKey, Stripe__Currency
-- SmtpSettings__Host, SmtpSettings__Port, SmtpSettings__Username, SmtpSettings__Password, SmtpSettings__SenderEmail, SmtpSettings__SenderName, SmtpSettings__EnableSsl
-- Cors__AllowedOrigins (array in JSON or `;`-separated)
+### For Hotel Managers
 
-## Development Notes
-- Use migrations; do not rely on EnsureCreated in production.
-- Keep logs out of the repo; configure `.gitignore` for `logs/`.
-- Re-enable `[Authorize]` on protected endpoints; use role policies.
+- Manage hotel and room listings
+- Handle bookings and check-ins/check-outs
+- View occupancy reports and analytics
+- Respond to guest reviews
 
-## Testing
-Run all tests:
+### For Administrators
+
+- Full system management
+- User and role administration
+- System configuration
+- Advanced reporting
+
+### Technical Highlights
+
+- Clean Architecture + CQRS (MediatR)
+- Secure JWT Authentication (Role-based)
+- EF Core 8 + SQL Server
+- Stripe Payment Integration
+- Serilog structured logging
+- Docker-ready with full stack compose
+- Comprehensive API docs (Swagger + Postman)
+
+## 🛠️ Technology Stack
+
+### 🏗 Architecture & Patterns
+
+- **Clean Architecture** (Domain → Application → Infrastructure → API)
+- **CQRS Pattern** using MediatR
+- **Repository Pattern** + Unit of Work
+- **Domain-Driven Design principles** (Entities, Value Objects, Domain Events)
+- **Specification Pattern** for reusable queries
+- **SOLID & Clean Code** principles
+
+### ⚙ Backend Technologies
+
+- **.NET 8 / ASP.NET Core 8**
+- **Entity Framework Core 8** (SQL Server)
+- **MediatR** (Commands / Queries / Pipeline Behaviors)
+- **FluentValidation** for request validation
+- **AutoMapper** for DTO → Entity mapping
+- Built-in **Dependency Injection**
+
+### 🔐 Authentication & Authorization
+
+- **JWT Bearer Authentication**
+- **Role-Based Access Control (RBAC)**
+- Policy-based authorization
+- Secure password hashing
+
+### 🌐 API Capabilities
+
+- RESTful API design
+- **API Versioning**
+- **Swagger / OpenAPI 3**
+- Consistent API Response Wrapper
+- Global Exception Handling
+- **CORS** configuration
+- **Response Caching**
+- Response Compression
+
+### 💾 Data & Persistence
+
+- SQL Server 2022
+- EF Core Migrations
+- Soft Delete support
+- Pagination, filtering, sorting
+- Optimized EF Core queries (AsNoTracking, compiled queries)
+
+### 💳 Payments
+
+- **Stripe PaymentIntent API**
+- Webhook Handling (`payment_intent.succeeded`)
+- Automatic booking confirmation on payment success
+
+### 🧪 Testing
+
+- **xUnit** for unit testing
+- **Integration Tests** using WebApplicationFactory/TestServer
+- **Moq** for mocking
+- Coverage reporting (Coverlet)
+
+### 📊 Logging & Monitoring
+
+- **Serilog** (Console + File + Seq support)
+- Request/Response logging
+- Structured logging with enrichers
+- **Health Checks** (`/health`, `/health/ready`, `/health/live`)
+
+### 🐳 DevOps & Deployment
+
+- **Docker** + Docker Compose
+- Environment-based configuration (Development/Production)
+- GitHub Actions (CI pipeline)
+- Secrets via Environment Variables / User Secrets
+
+### 🔒 Security
+
+- HTTPS enforcement
+- Security headers (CSP, HSTS, XSS-Protection)
+- Input validation
+- Output encoding
+- Rate limiting
+- CORS Policies
+
+### 🧰 Developer Experience
+
+- Visual Studio 2022 / VS Code
+- Postman Collection included
+- Swagger UI for interactive testing
+- XML documentation comments
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (recommended)
+- [Postman](https://www.postman.com/) (optional, for API testing)
+
+### Run with Docker (Recommended)
+
 ```bash
-dotnet test tests --configuration Release
+
+#Clone the repository
+git clone https://github.com/Dev-Ahmed-Ashraf/Hotel_Booking_API.git
+cd Hotel_Booking_API
+
+#Start the full stack (API + SQL Server)
+docker-compose up -d --build
 ```
 
-## CI
-GitHub Actions builds, tests, and publishes artifacts for pushes/PRs to `main`/`master`.
+## 📸 Screenshots
 
-## API Documentation
-- Swagger UI: `/swagger`
-- Postman collections are provided in `Hotel_Booking_API/`.
+<div align="center">
 
-## License
-MIT
+  <!-- Swagger UI -->
+  <h3>Swagger Documentation</h3>
+  <img src="screenshots/swagger-ui-1.png" width="80%" />
+  <img src="screenshots/swagger-ui-2.png" width="80%" />
+  <img src="screenshots/swagger-ui-3.png" width="80%" />
+  <img src="screenshots/swagger-ui-4.png" width="80%" />
 
----
-Built with ASP.NET Core 8 and Clean Architecture.
+  <!-- Postman -->
+  <h3>Postman Collection</h3>
+  <img src="screenshots/postman-collection.png" width="80%" />
 
+  <!-- JWT Authentication -->
+  <h3>JWT Authentication</h3>
+  <img src="screenshots/jwt-authentication.png" width="80%" />
+
+  <!-- API Response Examples -->
+  <h3>API Response Examples</h3>
+  <img src="screenshots/api-response-example-gethotels.png" width="80%" />
+  <img src="screenshots/api-response-example-CreateBooking.png" width="80%" />
+  <img src="screenshots/api-response-example-DeleteHotel.png" width="80%" />
+  <img src="screenshots/api-response-example-PartialUpdateRoom.png" width="80%" />
+  <img src="screenshots/api-response-example-GetReviewsForHotel.png" width="80%" />
+
+  <!-- Admin Dashboard -->
+  <h3>Admin Dashboard</h3>
+  <img src="screenshots/api-response-example-admindashboard.png" width="80%" />
+
+  <!-- Database Schema -->
+  <h3>Database Schema</h3>
+  <img src="screenshots/database-schema.png" width="80%" />
+
+</div>
+
+## 📚 Documentation
+
+For detailed technical documentation, please refer to:
+
+- [API Documentation](Hotel_Booking_API/README.md) - Complete API reference and developer guide
+- [Database Schema](Hotel_Booking_API/docs/DATABASE.md) - Detailed database design and relationships
+- [Authentication Guide](Hotel_Booking_API/docs/AUTHENTICATION.md) - Setting up authentication and authorization
+- [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment instructions
+
+## 🛠 Built With
+
+- ASP.NET Core 8
+- EF Core 8
+- MediatR
+- FluentValidation
+- AutoMapper
+- Serilog
+- xUnit
+- Docker
+
+## 🤝 Contributing
+
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [.NET Foundation](https://dotnetfoundation.org/)
+- [MediatR](https://github.com/jbogard/MediatR)
+- [Serilog](https://serilog.net/)
+- [Stripe](https://stripe.com/)
+- [Swagger](https://swagger.io/)
