@@ -7,7 +7,7 @@ A modern, scalable hotel booking system built with **ASP.NET Core 8**, **Clean A
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)
 ![C#](https://img.shields.io/badge/C%23-239120?logo=c-sharp&logoColor=white)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Build Status](https://github.com/Dev-Ahmed-Ashraf/Hotel_Booking_API/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Dev-Ahmed-Ashraf/Hotel_Booking_API/actions)
+[![Build Status](https://github.com/Dev-Ahmed-Ashraf/Hotel_Booking_API/actions/workflows/dotnet.yml)](https://github.com/Dev-Ahmed-Ashraf/Hotel_Booking_API/actions)
 [![Docker Pulls](https://img.shields.io/docker/pulls/Dev-Ahmed-Ashraf/hotel-booking-api)](https://hub.docker.com/r/Dev-Ahmed-Ashraf/hotel-booking-api)
 
 <img src="screenshots/swagger-ui-1.png" width="85%" alt="Swagger UI"/>
