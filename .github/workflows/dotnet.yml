@@ -19,16 +19,11 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Restore dependencies
-        run: dotnet restore "Hotel_Booking_API/Hotel_Booking_API.csproj"
+      - name: Restore all dependencies
+        run: dotnet restore
 
-      - name: Build
-        run: dotnet build "Hotel_Booking_API/Hotel_Booking_API.csproj" --configuration Release --no-restore
-
-      - name: Build Test Projects
-        run: |
-          dotnet build "tests/Hotel_Booking.UnitTests/Hotel_Booking.UnitTests.csproj" -c Release --no-restore
-          dotnet build "tests/Hotel_Booking.IntegrationTests/Hotel_Booking.IntegrationTests.csproj" -c Release --no-restore
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore
 
       - name: Run Unit Tests
         run: dotnet test "tests/Hotel_Booking.UnitTests/Hotel_Booking.UnitTests.csproj" --configuration Release --no-build --verbosity normal
