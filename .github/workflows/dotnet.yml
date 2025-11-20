@@ -26,10 +26,12 @@ jobs:
         run: dotnet build "Hotel_Booking_API/Hotel_Booking_API.csproj" --configuration Release --no-restore
 
       - name: Run Unit Tests
-        run: dotnet test "tests/Hotel_Booking_API.UnitTests" --configuration Release --no-build
+        run: dotnet test "tests/Hotel_Booking.UnitTests/Hotel_Booking.UnitTests.csproj" --configuration Release --no-build
+        shell: pwsh
 
       - name: Run Integration Tests
-        run: dotnet test "tests/Hotel_Booking_API.IntegrationTests" --configuration Release --no-build
+        run: dotnet test "tests/Hotel_Booking.IntegrationTests/Hotel_Booking.IntegrationTests.csproj" --configuration Release --no-build
+        shell: pwsh
 
       - name: Publish
         run: dotnet publish "Hotel_Booking_API/Hotel_Booking_API.csproj" -c Release -o out
