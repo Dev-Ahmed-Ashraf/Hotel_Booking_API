@@ -22,8 +22,9 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore "Hotel_Booking_API/Hotel_Booking_API.csproj"
 
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
+      - name: Build Solution
+        run: dotnet build "Hotel_Booking.sln" --configuration Release --no-restore
+
 
       - name: Run Unit Tests
         run: dotnet test "tests/Hotel_Booking.UnitTests/Hotel_Booking.UnitTests.csproj" --configuration Release
