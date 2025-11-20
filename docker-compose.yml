@@ -1,10 +1,11 @@
 version: "3.9"
+
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong!Passw0rd
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong!Passw0rd"
     ports:
       - "1433:1433"
     volumes:
@@ -14,18 +15,18 @@ services:
     build:
       context: ./Hotel_Booking_API
       dockerfile: Dockerfile
+      args:
+        JwtSettings__SecretKey: ${JwtSettings__SecretKey}
+        Stripe__ApiKey: ${Stripe__ApiKey}
+        Stripe__PublishableKey: ${Stripe__PublishableKey}
+        Stripe__WebhookSecret: ${Stripe__WebhookSecret}
+        SmtpSettings__Username: ${SmtpSettings__Username}
+        SmtpSettings__Password: ${SmtpSettings__Password}
+
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: Server=sqlserver;Database=HotelBookingDb;User Id=SA;Password=YourStrong!Passw0rd;TrustServerCertificate=True;
-
-      JwtSettings__SecretKey: ${JwtSettings__SecretKey}
-      Stripe__ApiKey: ${Stripe__ApiKey}
-      Stripe__WebhookSecret: ${Stripe__WebhookSecret}
-      Stripe__PublishableKey: ${Stripe__PublishableKey}
-
-      SmtpSettings__Username: ${SmtpSettings__Username}
-      SmtpSettings__Password: ${SmtpSettings__Password}
 
     ports:
       - "8080:8080"
@@ -34,5 +35,3 @@ services:
 
 volumes:
   mssql-data:
-
-

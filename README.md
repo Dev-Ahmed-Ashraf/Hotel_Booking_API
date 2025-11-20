@@ -38,16 +38,6 @@ A modern, scalable hotel booking system built with **ASP.NET Core 8**, **Clean A
 - System configuration
 - Advanced reporting
 
-### Technical Highlights
-
-- Clean Architecture + CQRS (MediatR)
-- Secure JWT Authentication (Role-based)
-- EF Core 8 + SQL Server
-- Stripe Payment Integration
-- Serilog structured logging
-- Docker-ready with full stack compose
-- Comprehensive API docs (Swagger + Postman)
-
 ## 🛠️ Technology Stack
 
 ### 🏗 Architecture & Patterns
@@ -199,8 +189,8 @@ docker-compose up -d --build
 For detailed technical documentation, please refer to:
 
 - [API Documentation](Hotel_Booking_API/README.md) - Complete API reference and developer guide
-- [Database Schema](Hotel_Booking_API/docs/DATABASE.md) - Detailed database design and relationships
-- [Authentication Guide](Hotel_Booking_API/docs/AUTHENTICATION.md) - Setting up authentication and authorization
+- [Database Schema](/docs/DATABASE.md) - Detailed database design and relationships
+- [Authentication Guide](/docs/AUTHENTICATION.md) - Setting up authentication and authorization
 - [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment instructions
 
 ## 🛠 Built With
@@ -222,18 +212,6 @@ Contributions are what make the open-source community such an amazing place to l
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
 ## 📄 License

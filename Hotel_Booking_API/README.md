@@ -61,64 +61,6 @@ The solution follows Clean Architecture principles with the following layers:
 - **Logging**: Serilog
 - **Testing**: xUnit, Moq
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [SQL Server 2019+](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) or Docker
-- [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) or [VS Code](https://code.visualstudio.com/)
-
-### Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/Dev-Ahmed-Ashraf/Hotel_Booking_API.git
-   cd Hotel_Booking_API
-   ```
-
-2. **Restore dependencies**
-
-   ```bash
-   dotnet restore
-   ```
-
-3. **Configure the application**
-
-   - Copy `appsettings.Development.example.json` to `appsettings.Development.json`
-   - Update connection strings and other settings
-
-4. **Set up user secrets**
-
-   ```bash
-   dotnet user-secrets init
-   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=.;Database=HotelBookingDb;Trusted_Connection=true;TrustServerCertificate=True;"
-   dotnet user-secrets set "JwtSettings:SecretKey" "Your-Super-Secret-Key-At-Least-32-Chars-Long"
-   ```
-
-5. **Run database migrations**
-
-   ```bash
-   dotnet ef database update --project src/Infrastructure --startup-project src/API
-   ```
-
-6. **Run the application**
-
-   ```bash
-   dotnet run --project src/API
-   ```
-
-7. **Access the API**
-   - Swagger UI: `https://localhost:7062/swagger`
-   - Health check: `https://localhost:7062/health`
-
-### Using Docker
-
-```bash
-docker-compose up -d --build
-```
-
 ## 📚 API Documentation
 
 ### Swagger UI
@@ -263,14 +205,6 @@ Run with Docker Compose:
 docker-compose -f ../docker-compose.prod.yml up -d
 ```
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ### Code Style
 
 - Follow [.NET Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)
@@ -281,10 +215,6 @@ docker-compose -f ../docker-compose.prod.yml up -d
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
-
-## 📞 Support
-
-For support, please open an issue in the [issue tracker](https://github.com/Dev-Ahmed-Ashraf/Hotel_Booking_API/issues).
 
 ## 🚀 Quick Start
 
@@ -959,17 +889,9 @@ All API responses follow a consistent format:
 4. Push to the branch
 5. Create a Pull Request
 
-## 📄 License
+## 📞 Support
 
-This project is licensed under the MIT License.
-
-## 🆘 Support
-
-For support and questions:
-
-- Please open an issue in the repo for any questions.
-- Documentation: Available through Swagger UI
-- Issues: Create an issue in the repository
+For support, please open an issue in the [issue tracker](https://github.com/Dev-Ahmed-Ashraf/Hotel_Booking_API/issues).
 
 ---
 
