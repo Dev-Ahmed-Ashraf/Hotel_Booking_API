@@ -20,10 +20,10 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore all dependencies
-        run: dotnet restore
+        run: dotnet restore "Hotel_Booking_API/Hotel_Booking.sln"
 
       - name: Build solution
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build "Hotel_Booking_API/Hotel_Booking.sln" --configuration Release --no-restore
 
       - name: Run Unit Tests
         run: dotnet test "tests/Hotel_Booking.UnitTests/Hotel_Booking.UnitTests.csproj" --configuration Release --no-build --verbosity normal
