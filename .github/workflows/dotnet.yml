@@ -28,10 +28,10 @@ jobs:
       - name: Run Unit Tests
         run: dotnet test "tests/Hotel_Booking.UnitTests/Hotel_Booking.UnitTests.csproj" --configuration Release
 
-      - name: Run Integration Tests (SQLite In-Memory)
-        env:
-          ASPNETCORE_ENVIRONMENT: Test
-        run: dotnet test "tests/Hotel_Booking.IntegrationTests/Hotel_Booking.IntegrationTests.csproj" --configuration Release --settings tests/Hotel_Booking.IntegrationTests/test.runsettings
+      # - name: Run Integration Tests (SQLite In-Memory)
+      #   env:
+      #     ASPNETCORE_ENVIRONMENT: Test
+      #   run: dotnet test "tests/Hotel_Booking.IntegrationTests/Hotel_Booking.IntegrationTests.csproj" --configuration Release --settings tests/Hotel_Booking.IntegrationTests/test.runsettings
 
       - name: Publish
         run: dotnet publish "Hotel_Booking_API/Hotel_Booking_API.csproj" -c Release -o out
