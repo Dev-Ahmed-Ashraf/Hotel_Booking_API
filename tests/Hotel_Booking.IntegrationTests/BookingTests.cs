@@ -76,11 +76,11 @@ namespace Hotel_Booking.IntegrationTests
             var createHotel = await _client.PostAsJsonAsync("/api/hotels", new
             {
                 Name = "Test Hotel",
-                address = "Cairo - sdspfmskmfs",
+                Address = "Cairo - sdspfmskmfs",
                 Description = "Auto-created for integration tests",
-                city = "giza",
-                country = "Egypt",
-                rating = 3
+                City = "giza",
+                Country = "Egypt",
+                Rating = 3
             });
 
             var hotelJsonString = await createHotel.Content.ReadAsStringAsync();
@@ -94,11 +94,11 @@ namespace Hotel_Booking.IntegrationTests
             var createRoomRequest = new
             {
                 HotelId = hotelId,  
-                roomNumber = $"R{Guid.NewGuid().ToString("N")[..3]}",
-                type = 0,
+                RoomNumber = $"R{Guid.NewGuid().ToString("N")[..3]}",
+                Type = 0,
                 Capacity = 2,
-                price = 500,
-                description = "Room generated dynamically from test"
+                Price = 500,
+                Description = "Room generated dynamically from test"
             };
 
             var roomResponse = await _client.PostAsJsonAsync("/api/rooms", createRoomRequest);
@@ -199,11 +199,11 @@ namespace Hotel_Booking.IntegrationTests
             var createHotel = await _client.PostAsJsonAsync("/api/hotels", new
             {
                 Name = "Test Hotel",
-                address = "Cairo - Test Address",
+                Address = "Cairo - Test Address",
                 Description = "Auto-created for integration tests",
-                city = "Giza",
-                country = "Egypt",
-                rating = 3
+                City = "Giza",
+                Country = "Egypt",
+                Rating = 3
             });
 
             var hotelJsonString = await createHotel.Content.ReadAsStringAsync();
@@ -218,11 +218,11 @@ namespace Hotel_Booking.IntegrationTests
             var createRoomRequest = new
             {
                 HotelId = hotelId,
-                roomNumber = $"R{Guid.NewGuid().ToString("N")[..3]}",
-                type = 0,
+                RoomNumber = $"R{Guid.NewGuid().ToString("N")[..3]}",
+                Type = 0,
                 Capacity = 2,
-                price = 500,
-                description = "Room generated dynamically from test"
+                Price = 500,
+                Description = "Room generated dynamically from test"
             };
 
             var roomResponse = await _client.PostAsJsonAsync("/api/rooms", createRoomRequest);
