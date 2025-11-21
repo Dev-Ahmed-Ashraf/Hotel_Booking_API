@@ -31,6 +31,10 @@ namespace Hotel_Booking_API.IntegrationTests
             var response = await _client.PostAsJsonAsync("/api/auth/register", request);
 
             response.StatusCode.Should().BeOneOf(HttpStatusCode.Created, HttpStatusCode.OK);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var json = JsonDocument.Parse(responseContent);
+            json.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
         }
 
         [Fact]
@@ -60,7 +64,7 @@ namespace Hotel_Booking_API.IntegrationTests
         {
             // Create a new user first
             var email = $"login_{Guid.NewGuid()}@gmail.com";
-            await _client.PostAsJsonAsync("/api/auth/register", new
+            var registerResponse = await _client.PostAsJsonAsync("/api/auth/register", new
             {
                 FirstName = "Test",
                 LastName = "User",
@@ -69,19 +73,21 @@ namespace Hotel_Booking_API.IntegrationTests
                 Role = 0
             });
 
+            registerResponse.EnsureSuccessStatusCode();
+
             var login = new { Email = email, Password = "P@ssw0rd!" };
 
             var response = await _client.PostAsJsonAsync("/api/auth/login", login);
+            response.EnsureSuccessStatusCode();
             var jsonString = await response.Content.ReadAsStringAsync();
 
             var json = JsonDocument.Parse(jsonString);
 
-            var token = json.RootElement
-                            .GetProperty("data")
-                            .GetProperty("token")
-                            .GetString();
-
-            token.Should().NotBeNullOrEmpty();
+            // Check if the response has the expected structure
+            json.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+            json.RootElement.TryGetProperty("data", out var data).Should().BeTrue();
+            data.TryGetProperty("token", out _).Should().BeTrue();
+            data.TryGetProperty("user", out _).Should().BeTrue();
         }
 
         [Fact]
@@ -109,8 +115,10 @@ namespace Hotel_Booking_API.IntegrationTests
         [Fact]
         public async Task Booking_Endpoint_Without_Token_Should_Return_401()
         {
-            var response = await _client.GetAsync("/api/bookings");
+            // Clear any default headers that might have been set
+            _client.DefaultRequestHeaders.Authorization = null;
 
+            var response = await _client.GetAsync("/api/bookings");
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
     }
