@@ -8,6 +8,11 @@ using Microsoft.Data.Sqlite;
 
 public class TestWebApplicationFactory : WebApplicationFactory<Hotel_Booking_API.Program>
 {
+    static TestWebApplicationFactory()
+    {
+        SQLitePCL.Batteries_V2.Init();
+    }
+
     private SqliteConnection? _connection;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

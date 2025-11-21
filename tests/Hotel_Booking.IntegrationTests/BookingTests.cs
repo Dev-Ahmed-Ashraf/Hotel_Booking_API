@@ -72,11 +72,28 @@ namespace Hotel_Booking.IntegrationTests
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", adminToken);
 
+            // ========== Create REAL Hotel for SQLite ==========
+            var createHotel = await _client.PostAsJsonAsync("/api/hotels", new
+            {
+                Name = "Test Hotel",
+                address = "Cairo - sdspfmskmfs",
+                Description = "Auto-created for integration tests",
+                city = "giza",
+                country = "Egypt",
+                rating = 3
+            });
+
+            var hotelJsonString = await createHotel.Content.ReadAsStringAsync();
+            Console.WriteLine("CREATE HOTEL RESPONSE: " + hotelJsonString);
+
+            var hotelJson = JsonDocument.Parse(hotelJsonString);
+            var hotelId = hotelJson.RootElement.GetProperty("data").GetProperty("id").GetInt32();
+
 
             // ========== Create Room dynamically ==========
             var createRoomRequest = new
             {
-                HotelId = 1026,  
+                HotelId = hotelId,  
                 roomNumber = $"R{Guid.NewGuid().ToString("N")[..3]}",
                 type = 0,
                 Capacity = 2,
@@ -91,7 +108,6 @@ namespace Hotel_Booking.IntegrationTests
 
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
-
 
 
             // ========== Create Booking ==========
@@ -152,7 +168,7 @@ namespace Hotel_Booking.IntegrationTests
         [Fact]
         public async Task CreateBooking_Should_Fail_When_Room_Already_Booked()
         {
-            // Register + Login
+            // ========== Register + Login User ==========
             var email = $"user_{Guid.NewGuid()}@gmail.com";
 
             await _client.PostAsJsonAsync("/api/auth/register", new
@@ -161,44 +177,96 @@ namespace Hotel_Booking.IntegrationTests
                 LastName = "User",
                 Email = email,
                 Password = "P@ssw0rd!",
-                Role = 0
+                Role = 1
             });
 
-            var login = await _client.PostAsJsonAsync("/api/auth/login", new { Email = email, Password = "P@ssw0rd!" });
+            var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
+            {
+                Email = email,
+                Password = "P@ssw0rd!"
+            });
 
-            var loginJson = JsonDocument.Parse(await login.Content.ReadAsStringAsync());
+            var loginJson = JsonDocument.Parse(await loginResponse.Content.ReadAsStringAsync());
             var token = loginJson.RootElement.GetProperty("data").GetProperty("token").GetString();
             var userId = loginJson.RootElement.GetProperty("data").GetProperty("user").GetProperty("id").GetInt32();
 
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
+
+
+            // ========== Create REAL Hotel for SQLite ==========
+            var createHotel = await _client.PostAsJsonAsync("/api/hotels", new
+            {
+                Name = "Test Hotel",
+                address = "Cairo - Test Address",
+                Description = "Auto-created for integration tests",
+                city = "Giza",
+                country = "Egypt",
+                rating = 3
+            });
+
+            var hotelJsonString = await createHotel.Content.ReadAsStringAsync();
+            Console.WriteLine("CREATE HOTEL RESPONSE: " + hotelJsonString);
+
+            var hotelJson = JsonDocument.Parse(hotelJsonString);
+            var hotelId = hotelJson.RootElement.GetProperty("data").GetProperty("id").GetInt32();
+
+
+
+            // ========== Create Room ==========
+            var createRoomRequest = new
+            {
+                HotelId = hotelId,
+                roomNumber = $"R{Guid.NewGuid().ToString("N")[..3]}",
+                type = 0,
+                Capacity = 2,
+                price = 500,
+                description = "Room generated dynamically from test"
+            };
+
+            var roomResponse = await _client.PostAsJsonAsync("/api/rooms", createRoomRequest);
+            var roomJsonString = await roomResponse.Content.ReadAsStringAsync();
+            Console.WriteLine("CREATE ROOM RESPONSE: " + roomJsonString);
+
+            var roomJson = JsonDocument.Parse(roomJsonString);
+            var roomId = roomJson.RootElement.GetProperty("data").GetProperty("id").GetInt32();
+
+
+
+            // ========== First Booking (Should Succeed) ==========
             var dates = new
             {
                 CheckIn = DateTime.Today.AddDays(5),
                 CheckOut = DateTime.Today.AddDays(7)
             };
 
-            // 1st booking → OK
-            await _client.PostAsJsonAsync($"/api/bookings?userId={userId}", new
+            var firstBooking = await _client.PostAsJsonAsync($"/api/bookings?userId={userId}", new
             {
-                RoomId = 1054,
+                RoomId = roomId,
                 CheckInDate = dates.CheckIn,
                 CheckOutDate = dates.CheckOut
             });
 
-            // 2nd booking same dates → should fail
-            var response = await _client.PostAsJsonAsync($"/api/bookings?userId={userId}", new
+            var firstBody = await firstBooking.Content.ReadAsStringAsync();
+            Console.WriteLine("FIRST BOOKING RESPONSE: " + firstBody);
+
+            firstBooking.StatusCode.Should().BeOneOf(HttpStatusCode.Created, HttpStatusCode.OK);
+
+
+
+            // ========== Second Booking (Same Dates → Should Fail) ==========
+            var secondBooking = await _client.PostAsJsonAsync($"/api/bookings?userId={userId}", new
             {
-                RoomId = 1054,
+                RoomId = roomId,
                 CheckInDate = dates.CheckIn,
                 CheckOutDate = dates.CheckOut
             });
 
-            var body = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("DEBUG: " + body);
+            var secondBody = await secondBooking.Content.ReadAsStringAsync();
+            Console.WriteLine("SECOND BOOKING RESPONSE: " + secondBody);
 
-            response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            secondBooking.StatusCode.Should().Be(HttpStatusCode.Conflict);
         }
 
         [Fact]

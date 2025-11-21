@@ -45,9 +45,27 @@ namespace Hotel_Booking.IntegrationTests
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
+            // ========== Create REAL Hotel for SQLite ==========
+            var createHotel = await _client.PostAsJsonAsync("/api/hotels", new
+            {
+                Name = "Test Hotel",
+                address = "Cairo - sdspfmskmfs",
+                Description = "Auto-created for integration tests",
+                city = "giza",
+                country = "Egypt",
+                rating = 3
+            });
+
+            var hotelJsonString = await createHotel.Content.ReadAsStringAsync();
+            Console.WriteLine("CREATE HOTEL RESPONSE: " + hotelJsonString);
+
+            var hotelJson = JsonDocument.Parse(hotelJsonString);
+            var hotelId = hotelJson.RootElement.GetProperty("data").GetProperty("id").GetInt32();
+
+            // Create Room
             var createRoomRequest = new
             {
-                HotelId = 1026,
+                HotelId = hotelId,
                 roomNumber = $"R{Guid.NewGuid().ToString("N").Substring(0, 3)}",
                 type = 0,
                 Capacity = 2,
@@ -137,12 +155,29 @@ namespace Hotel_Booking.IntegrationTests
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
+            // ========== Create REAL Hotel for SQLite ==========
+            var createHotel = await _client.PostAsJsonAsync("/api/hotels", new
+            {
+                Name = "Test Hotel",
+                address = "Cairo - sdspfmskmfs",
+                Description = "Auto-created for integration tests",
+                city = "giza",
+                country = "Egypt",
+                rating = 3
+            });
+
+            var hotelJsonString = await createHotel.Content.ReadAsStringAsync();
+            Console.WriteLine("CREATE HOTEL RESPONSE: " + hotelJsonString);
+
+            var hotelJson = JsonDocument.Parse(hotelJsonString);
+            var hotelId = hotelJson.RootElement.GetProperty("data").GetProperty("id").GetInt32();
+
             // Create room
             var roomNumber = $"R{Guid.NewGuid().ToString("N").Substring(0, 3)}";
 
             var createRoomRequest = new
             {
-                HotelId = 1026,
+                HotelId = hotelId,
                 RoomNumber = roomNumber,
                 type = 0,
                 Capacity = 2,
@@ -263,10 +298,27 @@ namespace Hotel_Booking.IntegrationTests
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
-            // 2) Create room first
+            // ========== Create REAL Hotel for SQLite ==========
+            var createHotel = await _client.PostAsJsonAsync("/api/hotels", new
+            {
+                Name = "Test Hotel",
+                address = "Cairo - sdspfmskmfs",
+                Description = "Auto-created for integration tests",
+                city = "giza",
+                country = "Egypt",
+                rating = 3
+            });
+
+            var hotelJsonString = await createHotel.Content.ReadAsStringAsync();
+            Console.WriteLine("CREATE HOTEL RESPONSE: " + hotelJsonString);
+
+            var hotelJson = JsonDocument.Parse(hotelJsonString);
+            var hotelId = hotelJson.RootElement.GetProperty("data").GetProperty("id").GetInt32();
+
+            // 2) Create room 
             var roomReq = new
             {
-                HotelId = 1026,
+                HotelId = hotelId,
                 roomNumber = $"R{Guid.NewGuid().ToString("N").Substring(0, 3)}",
                 type = 0,
                 Capacity = 2,
