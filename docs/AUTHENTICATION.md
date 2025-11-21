@@ -23,7 +23,7 @@ The API uses JWT (JSON Web Tokens) for stateless authentication. All authenticat
   "sub": "user-id-here",
   "email": "user@example.com",
   "name": "John Doe",
-  "roles": ["User", "Admin"],
+  "roles": ["Customer", "Admin", "HotelManager"],
   "nbf": 1637424000,
   "exp": 1637510400,
   "iat": 1637424000
@@ -53,7 +53,6 @@ The API uses JWT (JSON Web Tokens) for stateless authentication. All authenticat
 
 | Role | Permissions |
 |------|-------------|
-| **Guest** | View hotels and rooms |
 | **Customer** | Book rooms, manage own bookings |
 | **HotelManager** | Manage hotels and rooms |
 | **Admin** | Full system access |

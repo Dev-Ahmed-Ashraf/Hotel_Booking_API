@@ -18,7 +18,7 @@ This guide provides instructions for deploying the Hotel Booking API in differen
 
 ### For All Deployments
 - .NET 8.0 SDK
-- SQL Server 2019+ or Azure SQL Database
+- SQL Server 2019+
 - Git
 
 ### For Containerized Deployments
@@ -56,10 +56,12 @@ SMTP_HOST=smtp.sendgrid.net
 SMTP_PORT=587
 SMTP_USER=apikey
 SMTP_PASSWORD=your-sendgrid-api-key
-SMTP_FROM_EMAIL=noreply@yourdomain.com
-SMTP_FROM_NAME="Hotel Booking"
+SMTP_SenderEmail=noreply@yourdomain.com
+SMTP_SenderName="Hotel Booking"
+SMTP_EnableSsl=true
 
 # Stripe (for payments)
+STRIPE_ApiKey= Your-STRIPE_ApiKey,
 STRIPE_SECRET_KEY=your-stripe-secret-key
 STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
 STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
@@ -73,7 +75,7 @@ ASPNETCORE_URLS=http://+:8080
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/Hotel_Booking_API.git
+git clone https://github.com/Dev-Ahmed-Ashraf/Hotel_Booking_API.git
 cd Hotel_Booking_API
 ```
 

@@ -1,30 +1,20 @@
 # Database Schema
 
-## Overview
+## Overview 
 This document describes the database schema for the Hotel Booking API, including tables, relationships, and important constraints.
 
 ## Tables
 
 ### Users
 - `Id` (PK, Guid)
-- `UserName` (nvarchar(256), not null)
 - `Email` (nvarchar(256), not null, unique)
 - `PasswordHash` (nvarchar(max), not null)
 - `FirstName` (nvarchar(100))
 - `LastName` (nvarchar(100))
-- `PhoneNumber` (nvarchar(20))
+- `Role` (int)
 - `CreatedAt` (datetime2, not null)
-- `LastLogin` (datetime2)
-- `IsActive` (bit, not null, default: 1)
-
-### Roles
-- `Id` (PK, nvarchar(450))
-- `Name` (nvarchar(256), not null, unique)
-- `NormalizedName` (nvarchar(256), not null, unique)
-
-### UserRoles
-- `UserId` (PK, FK to Users.Id)
-- `RoleId` (PK, FK to Roles.Id)
+- `UpdatedAt` (datetime2)
+- `IsDeleted` (bit, not null, default: 1)
 
 ### Hotels
 - `Id` (PK, Guid)
@@ -33,34 +23,23 @@ This document describes the database schema for the Hotel Booking API, including
 - `Address` (nvarchar(500), not null)
 - `City` (nvarchar(100), not null)
 - `Country` (nvarchar(100), not null)
-- `StarRating` (int, not null, default: 3)
-- `PhoneNumber` (nvarchar(20))
-- `Email` (nvarchar(100))
-- `IsActive` (bit, not null, default: 1)
+- `Rating` (int, not null, default: 3)
+- `IsDeleted` (bit, not null, default: 1)
 - `CreatedAt` (datetime2, not null)
 - `UpdatedAt` (datetime2)
-- `CreatedById` (FK to Users.Id)
-- `UpdatedById` (FK to Users.Id, nullable)
+
 
 ### Rooms
 - `Id` (PK, Guid)
 - `HotelId` (FK to Hotels.Id, not null)
 - `RoomNumber` (nvarchar(20), not null)
-- `RoomTypeId` (FK to RoomTypes.Id, not null)
-- `FloorNumber` (int, not null)
-- `PricePerNight` (decimal(18,2), not null)
-- `IsAvailable` (bit, not null, default: 1)
-- `MaxOccupancy` (int, not null)
+- `Type` (FK to RoomTypes.Id, not null)
+- `Price` (decimal(18,2), not null)
+- `Capacity` (int, not null)
 - `Description` (nvarchar(1000))
 - `CreatedAt` (datetime2, not null)
 - `UpdatedAt` (datetime2)
-- `CreatedById` (FK to Users.Id)
-- `UpdatedById` (FK to Users.Id, nullable)
-
-### RoomTypes
-- `Id` (PK, int, identity)
-- `Name` (nvarchar(100), not null, unique)
-- `Description` (nvarchar(500))
+- `IsDeleted` (bit, not null, default: 1)
 
 ### Bookings
 - `Id` (PK, Guid)
@@ -69,12 +48,10 @@ This document describes the database schema for the Hotel Booking API, including
 - `CheckInDate` (date, not null)
 - `CheckOutDate` (date, not null)
 - `TotalPrice` (decimal(18,2), not null)
-- `Status` (int, not null) -- Enum: Pending, Confirmed, CheckedIn, CheckedOut, Cancelled
-- `PaymentStatus` (int, not null) -- Enum: Pending, Paid, Refunded, Failed
-- `PaymentIntentId` (nvarchar(100)) -- Stripe Payment Intent ID
+- `Status` (int, not null) -- Enum: Pending, Confirmed, Cancelled, Completed, NoAction
 - `CreatedAt` (datetime2, not null)
 - `UpdatedAt` (datetime2)
-- `CancellationDate` (datetime2, nullable)
+- `IsDeleted` (bit, not null, default: 1)
 - `CancellationReason` (nvarchar(500), nullable)
 
 ### Reviews
@@ -82,39 +59,30 @@ This document describes the database schema for the Hotel Booking API, including
 - `UserId` (FK to Users.Id, not null)
 - `HotelId` (FK to Hotels.Id, not null)
 - `Rating` (int, not null) -- 1-5
-- `Title` (nvarchar(200), not null)
 - `Comment` (nvarchar(2000))
 - `CreatedAt` (datetime2, not null)
 - `UpdatedAt` (datetime2)
-- `IsApproved` (bit, not null, default: 0)
+- `IsDeleted` (bit, not null, default: 1)
 
 ## Relationships
 
-1. **User - UserRoles - Roles**: Many-to-Many
-   - A user can have multiple roles
-   - A role can be assigned to multiple users
-
-2. **Hotel - Room**: One-to-Many
+1. **Hotel - Room**: One-to-Many
    - A hotel can have multiple rooms
    - A room belongs to exactly one hotel
 
-3. **Room - RoomType**: Many-to-One
-   - Multiple rooms can be of the same type
-   - A room has exactly one room type
-
-4. **User - Booking**: One-to-Many
+2. **User - Booking**: One-to-Many
    - A user can have multiple bookings
    - A booking belongs to exactly one user
 
-5. **Room - Booking**: One-to-Many
+3. **Room - Booking**: One-to-Many
    - A room can have multiple bookings (over different date ranges)
    - A booking is for exactly one room
 
-6. **User - Review**: One-to-Many
+4. **User - Review**: One-to-Many
    - A user can write multiple reviews
    - A review is written by exactly one user
 
-7. **Hotel - Review**: One-to-Many
+5. **Hotel - Review**: One-to-Many
    - A hotel can have multiple reviews
    - A review is for exactly one hotel
 
