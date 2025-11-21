@@ -24,10 +24,9 @@ using System.Threading.RateLimiting;
 namespace Hotel_Booking_API
 {
     public partial class Program
-    {
-        public static void Main(string[] args)
+    {  
+        public static WebApplication BuildWebApp(string[] args)
         {
-            // Early bootstrap logger (logs before app fully loads)
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
                 .CreateBootstrapLogger();
@@ -35,21 +34,14 @@ namespace Hotel_Booking_API
             try
             {
                 Log.Information("Starting Hotel Booking API");
-
-                // Build web application (loads configuration, DI, hosting)
                 var builder = WebApplication.CreateBuilder(args);
 
-                // Configure Serilog using appsettings.json
                 Log.Logger = new LoggerConfiguration()
                     .ReadFrom.Configuration(builder.Configuration)
                     .CreateLogger();
 
                 builder.Host.UseSerilog();
-
-                // Register all services in DI container
                 ConfigureServices(builder.Services, builder.Configuration);
-
-                // Build the app
                 var app = builder.Build();
 
                 if (!app.Environment.IsEnvironment("Test"))
@@ -59,19 +51,23 @@ namespace Hotel_Booking_API
                     db.Database.Migrate();
                 }
 
-                // Configure middleware pipeline
                 ConfigureMiddleware(app);
-
-                app.Run();
+                return app;
             }
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Application terminated unexpectedly");
+                throw;
             }
             finally
             {
                 Log.CloseAndFlush();
             }
+        }
+
+        public static void Main(string[] args)
+        {
+            BuildWebApp(args).Run();
         }
 
         /// <summary>
@@ -385,6 +381,4 @@ namespace Hotel_Booking_API
             app.MapHealthChecks("/health");
         }
     }
-
-    public partial class Program { }
 }

@@ -1,5 +1,4 @@
-﻿using Hotel_Booking_API;
-using Hotel_Booking_API.Infrastructure.Data;
+﻿using Hotel_Booking_API.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Microsoft.Data.Sqlite;
 
-public class TestWebApplicationFactory : WebApplicationFactory<Program>
+public class TestWebApplicationFactory : WebApplicationFactory<Hotel_Booking_API.Program>
 {
-    private SqliteConnection _connection;
+    private SqliteConnection? _connection;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

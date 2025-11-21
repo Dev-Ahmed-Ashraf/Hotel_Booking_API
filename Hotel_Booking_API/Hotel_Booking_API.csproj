@@ -9,6 +9,7 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+  <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
