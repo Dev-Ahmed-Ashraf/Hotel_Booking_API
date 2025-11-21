@@ -18,6 +18,14 @@ namespace Hotel_Booking.IntegrationTests
             _client = factory.CreateClient();
         }
 
+        private async Task PrintDebug(HttpResponseMessage response)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("DEBUG RESPONSE:");
+            Console.WriteLine(body);
+        }
+
+
         [Fact]
         public async Task CreateRoom_Should_Return_201_When_Admin()
         {
@@ -159,11 +167,11 @@ namespace Hotel_Booking.IntegrationTests
             var createHotel = await _client.PostAsJsonAsync("/api/hotels", new
             {
                 Name = "Test Hotel",
-                address = "Cairo - sdspfmskmfs",
                 Description = "Auto-created for integration tests",
-                city = "giza",
-                country = "Egypt",
-                rating = 3
+                Address = "Cairo - sdspfmskmfs",
+                City = "giza",
+                Country = "Egypt",
+                Rating = 3
             });
 
             var hotelJsonString = await createHotel.Content.ReadAsStringAsync();
@@ -179,14 +187,15 @@ namespace Hotel_Booking.IntegrationTests
             {
                 HotelId = hotelId,
                 RoomNumber = roomNumber,
-                type = 0,
+                Type = 0,
+                Price = 500,
                 Capacity = 2,
-                price = 500,
-                description = "Test Room"
+                Description = "Test Room"
             };
 
             var createResponse = await _client.PostAsJsonAsync("/api/rooms", createRoomRequest);
             var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync());
+            await PrintDebug(createResponse);
 
             var roomId = createJson.RootElement.GetProperty("data").GetProperty("id").GetInt32();
 
