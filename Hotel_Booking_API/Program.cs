@@ -23,7 +23,7 @@ using System.Threading.RateLimiting;
 
 namespace Hotel_Booking_API
 {
-    public class Program
+    public partial class Program
     {
         public static void Main(string[] args)
         {
@@ -51,6 +51,13 @@ namespace Hotel_Booking_API
 
                 // Build the app
                 var app = builder.Build();
+
+                if (!app.Environment.IsEnvironment("Test"))
+                {
+                    using var scope = app.Services.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    db.Database.Migrate();
+                }
 
                 // Configure middleware pipeline
                 ConfigureMiddleware(app);
@@ -376,18 +383,8 @@ namespace Hotel_Booking_API
 
             // Health checks endpoint
             app.MapHealthChecks("/health");
-
-            // Auto apply EF migrations in Development
-            using (var scope = app.Services.CreateScope())
-            {
-                var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
-
-                if (env.IsDevelopment())
-                {
-                    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    context.Database.Migrate();
-                }
-            }
         }
     }
+
+    public partial class Program { }
 }

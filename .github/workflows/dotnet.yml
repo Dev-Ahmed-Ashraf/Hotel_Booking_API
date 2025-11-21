@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout source code
@@ -26,10 +26,12 @@ jobs:
         run: dotnet build "Hotel_Booking_API/Hotel_Booking.sln" --configuration Release --no-restore
 
       - name: Run Unit Tests
-        run: dotnet test "tests/Hotel_Booking.UnitTests/Hotel_Booking.UnitTests.csproj" --configuration Release --no-build --verbosity normal
+        run: dotnet test "tests/Hotel_Booking.UnitTests/Hotel_Booking.UnitTests.csproj" --configuration Release
 
-      - name: Run Integration Tests
-        run: dotnet test "tests/Hotel_Booking.IntegrationTests/Hotel_Booking.IntegrationTests.csproj" --configuration Release --no-build --verbosity normal
+      - name: Run Integration Tests (SQLite In-Memory)
+        env:
+          ASPNETCORE_ENVIRONMENT: Test
+        run: dotnet test "tests/Hotel_Booking.IntegrationTests/Hotel_Booking.IntegrationTests.csproj" --configuration Release --settings tests/Hotel_Booking.IntegrationTests/test.runsettings
 
       - name: Publish
         run: dotnet publish "Hotel_Booking_API/Hotel_Booking_API.csproj" -c Release -o out
@@ -67,5 +69,4 @@ jobs:
             ./Hotel_Booking_API
 
       - name: Push Docker Image
-        run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/hotel-booking-api:latest
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/hotel-booking-api:latest

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <!-- Platform & Framework -->
+    <TargetPlatform>x64</TargetPlatform>
+    <TargetFrameworkVersion>net8.0</TargetFrameworkVersion>
+
+    <!-- Disable parallel tests to avoid DB race conditions -->
+    <DisableParallelization>true</DisableParallelization>
+
+    <!-- Ensure tests run from output folder to pick deps.json correctly -->
+    <ResultsDirectory>TestResults</ResultsDirectory>
+  </RunConfiguration>
+</RunSettings>

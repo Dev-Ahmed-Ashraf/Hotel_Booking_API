@@ -8,11 +8,11 @@ using System.Text.Json;
 
 namespace Hotel_Booking.IntegrationTests
 {
-    public class RoomTests : IClassFixture<WebApplicationFactory<Program>>
+    public class RoomTests : IClassFixture<TestWebApplicationFactory>
     {
         private readonly HttpClient _client;
 
-        public RoomTests(WebApplicationFactory<Program> factory)
+        public RoomTests(TestWebApplicationFactory factory)
         {
             _client = factory.CreateClient();
         }

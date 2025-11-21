@@ -6,11 +6,11 @@ using System.Text.Json;
 
 namespace Hotel_Booking_API.IntegrationTests
 {
-    public class AuthTests : IClassFixture<WebApplicationFactory<Program>>
+    public class AuthTests : IClassFixture<TestWebApplicationFactory>
     {
         private readonly HttpClient _client;
 
-        public AuthTests(WebApplicationFactory<Program> factory)
+        public AuthTests(TestWebApplicationFactory factory)
         {
             _client = factory.CreateClient();
         }
