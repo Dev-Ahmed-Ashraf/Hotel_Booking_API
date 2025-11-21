@@ -13,19 +13,12 @@ namespace Hotel_Booking.IntegrationTests
 {
     public class PaymentTests : IClassFixture<TestWebApplicationFactory>
     {
-        // private readonly HttpClient _client;
+         //private readonly HttpClient _client;
 
-<<<<<<< HEAD
         public PaymentTests(TestWebApplicationFactory factory)
         {
-            _client = factory.CreateClient();
+            //_client = factory.CreateClient();
         }
-=======
-        // public PaymentTests(WebApplicationFactory<Program> factory)
-        // {
-        //     _client = factory.CreateClient();
-        // }
->>>>>>> d4ec5d1f23cbca8d04ffb4f505416e9dedfd621a
 
         // private const string StripeFakeEventJson = @"
         // {
@@ -46,7 +39,6 @@ namespace Hotel_Booking.IntegrationTests
         //     ""type"": ""charge.succeeded""
         // }";
 
-<<<<<<< HEAD
         //[Fact]
         //public async Task StripeWebhook_Should_Return_200_When_Signature_Is_Valid()
         //{
@@ -74,35 +66,6 @@ namespace Hotel_Booking.IntegrationTests
         //    response.StatusCode.Should().Be(HttpStatusCode.OK);
         //    body.Should().Contain("received");
         //}
-=======
-        // [Fact]
-        // public async Task StripeWebhook_Should_Return_200_When_Signature_Is_Valid()
-        // {
-        //     // Arrange
-        //     var webhookSecret = "whsec_xxx_replace_in_secrets";
-        //     var payload = StripeFakeEventJson;
-
-        //     var signature = StripeTestHelper.GenerateStripeSignature(payload, webhookSecret);
-
-        //     var request = new HttpRequestMessage(HttpMethod.Post, "/api/stripe/webhook")
-        //     {
-        //         Content = new StringContent(payload, Encoding.UTF8, "application/json")
-        //     };
-
-        //     request.Headers.Add("Stripe-Signature", signature);
-
-        //     // Act
-        //     var response = await _client.SendAsync(request);
-
-        //     var body = await response.Content.ReadAsStringAsync();
-
-        //     Console.WriteLine("DEBUG: " + body);
-
-        //     // Assert
-        //     response.StatusCode.Should().Be(HttpStatusCode.OK);
-        //     body.Should().Contain("received");
-        // }
->>>>>>> d4ec5d1f23cbca8d04ffb4f505416e9dedfd621a
 
 
     }
