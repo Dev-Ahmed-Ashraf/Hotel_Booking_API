@@ -140,21 +140,21 @@ namespace Hotel_Booking.IntegrationTests
         public async Task GetRoomById_Should_Return_200_When_Room_Exists()
         {
             // Register Admin
-            var email = $"admin_{Guid.NewGuid()}@gmail.com";
+            var Email = $"admin_{Guid.NewGuid()}@gmail.com";
 
             await _client.PostAsJsonAsync("/api/auth/register", new
             {
-                FirstName = "Admin",
-                LastName = "User",
-                Email = email,
-                Password = "P@ssw0rd!",
-                Role = 1
+                firstName = "Admin",
+                lastName = "User",
+                email = Email,
+                password = "P@ssw0rd!",
+                role = 1
             });
 
             var login = await _client.PostAsJsonAsync("/api/auth/login", new
             {
-                Email = email,
-                Password = "P@ssw0rd!"
+                email = Email,
+                password = "P@ssw0rd!"
             });
 
             var loginJson = JsonDocument.Parse(await login.Content.ReadAsStringAsync());
@@ -166,31 +166,31 @@ namespace Hotel_Booking.IntegrationTests
             // ========== Create REAL Hotel for SQLite ==========
             var createHotel = await _client.PostAsJsonAsync("/api/hotels", new
             {
-                Name = "Test Hotel",
-                Description = "Auto-created for integration tests",
-                Address = "Cairo - sdspfmskmfs",
-                City = "giza",
-                Country = "Egypt",
-                Rating = 3
+                name = "Test Hotel",
+                description = "Auto-created for integration tests",
+                address = "Cairo - sdspfmskmfs",
+                city = "giza",
+                country = "Egypt",
+                rating = 3
             });
 
             var hotelJsonString = await createHotel.Content.ReadAsStringAsync();
             Console.WriteLine("CREATE HOTEL RESPONSE: " + hotelJsonString);
 
             var hotelJson = JsonDocument.Parse(hotelJsonString);
-            var hotelId = hotelJson.RootElement.GetProperty("data").GetProperty("id").GetInt32();
+            var HotelId = hotelJson.RootElement.GetProperty("data").GetProperty("id").GetInt32();
 
             // Create room
-            var roomNumber = $"R{Guid.NewGuid().ToString("N").Substring(0, 3)}";
+            var RoomNumber = $"R{Guid.NewGuid().ToString("N").Substring(0, 3)}";
 
             var createRoomRequest = new
             {
-                HotelId = hotelId,
-                RoomNumber = roomNumber,
-                Type = 0,
-                Price = 500,
-                Capacity = 2,
-                Description = "Test Room"
+                hotelId = HotelId,
+                roomNumber = RoomNumber,
+                type = 0,
+                price = 500,
+                capacity = 2,
+                description = "Test Room"
             };
 
             var createResponse = await _client.PostAsJsonAsync("/api/rooms", createRoomRequest);
@@ -209,21 +209,21 @@ namespace Hotel_Booking.IntegrationTests
         public async Task GetRoomById_Should_Return_404_When_Not_Found()
         {
             // Register Admin
-            var email = $"admin_{Guid.NewGuid()}@gmail.com";
+            var Email = $"admin_{Guid.NewGuid()}@gmail.com";
 
             await _client.PostAsJsonAsync("/api/auth/register", new
             {
-                FirstName = "Admin",
-                LastName = "User",
-                Email = email,
-                Password = "P@ssw0rd!",
-                Role = 1
+                firstName = "Admin",
+                lastName = "User",
+                email = Email,
+                password = "P@ssw0rd!",
+                role = 1
             });
 
             var login = await _client.PostAsJsonAsync("/api/auth/login", new
             {
-                Email = email,
-                Password = "P@ssw0rd!"
+                email = Email,
+                password = "P@ssw0rd!"
             });
 
             var loginJson = JsonDocument.Parse(await login.Content.ReadAsStringAsync());
