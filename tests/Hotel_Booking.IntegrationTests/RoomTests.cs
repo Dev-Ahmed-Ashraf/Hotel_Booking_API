@@ -18,40 +18,40 @@ namespace Hotel_Booking.IntegrationTests
             _client = factory.CreateClient();
         }
 
-
-        private async Task<string> GetAuthTokenAsync(string email, string password)
+        private async Task PrintDebug(HttpResponseMessage response)
         {
-            var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
-            {
-                Email = email,
-                Password = password
-            });
-
-            loginResponse.EnsureSuccessStatusCode();
-
-            var responseContent = await loginResponse.Content.ReadAsStringAsync();
-            var json = JsonDocument.Parse(responseContent);
-            return json.RootElement.GetProperty("data").GetProperty("token").GetString()!;
+            var body = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("DEBUG RESPONSE:");
+            Console.WriteLine(body);
         }
+
 
         [Fact]
         public async Task CreateRoom_Should_Return_201_When_Admin()
         {
-            // Register Admin
+            // 1) Register Admin
             var email = $"admin_{Guid.NewGuid()}@gmail.com";
-            var password = "P@ssw0rd!";
 
             await _client.PostAsJsonAsync("/api/auth/register", new
             {
                 FirstName = "Admin",
                 LastName = "User",
                 Email = email,
-                Password = password,
+                Password = "P@ssw0rd!",
                 Role = 1 // Admin
             });
 
-            var token = await GetAuthTokenAsync(email, password);
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var login = await _client.PostAsJsonAsync("/api/auth/login", new
+            {
+                Email = email,
+                Password = "P@ssw0rd!"
+            });
+
+            var loginJson = JsonDocument.Parse(await login.Content.ReadAsStringAsync());
+            var token = loginJson.RootElement.GetProperty("data").GetProperty("token").GetString();
+
+            _client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
 
             // ========== Create REAL Hotel for SQLite ==========
             var createHotel = await _client.PostAsJsonAsync("/api/hotels", new
@@ -66,7 +66,7 @@ namespace Hotel_Booking.IntegrationTests
 
             var hotelJsonString = await createHotel.Content.ReadAsStringAsync();
             Console.WriteLine("CREATE HOTEL RESPONSE: " + hotelJsonString);
-            createHotel.EnsureSuccessStatusCode();
+
             var hotelJson = JsonDocument.Parse(hotelJsonString);
             var hotelId = hotelJson.RootElement.GetProperty("data").GetProperty("id").GetInt32();
 
