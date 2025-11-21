@@ -95,6 +95,7 @@ A modern, scalable hotel booking system built with **ASP.NET Core 8**, **Clean A
 - **xUnit** for unit testing
 - **Integration Tests** using WebApplicationFactory/TestServer
 - **Moq** for mocking
+- **SQLite** in-memory Integration Tests
 - Coverage reporting (Coverlet)
 
 ### 📊 Logging & Monitoring
