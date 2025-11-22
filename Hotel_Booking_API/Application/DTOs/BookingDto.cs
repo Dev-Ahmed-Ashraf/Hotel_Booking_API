@@ -62,4 +62,33 @@ namespace Hotel_Booking_API.Application.DTOs
         public int Days { get; set; }
         public decimal TotalPrice { get; set; }
     }
+
+    public class BookingsForHotelDto
+    {
+        public int Id { get; set; }
+        public string UserName { get; set; }
+        public string RoomNumber { get; set; }
+        public string HotelName { get; set; }
+        public DateTime CheckInDate { get; set; }
+        public DateTime CheckOutDate { get; set; }
+        public decimal TotalPrice { get; set; }
+        public BookingStatus Status { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public PaymentDto? Payment { get; set; }
+    }
+    public class BookingsForUserDto
+    {
+        public int Id { get; set; }
+        public int UserId { get; set; }
+        public string UserName { get; set; }
+        public string RoomNumber { get; set; }
+        public string HotelName { get; set; }
+        public DateTime CheckInDate { get; set; }
+        public DateTime CheckOutDate { get; set; }
+        public decimal TotalPrice { get; set; }
+        public BookingStatus Status { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public PaymentDto? Payment { get; set; }
+    }
+
 }

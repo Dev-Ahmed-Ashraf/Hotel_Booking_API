@@ -5,24 +5,23 @@ using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
 using Hotel_Booking_API.Domain.Entities;
 using Hotel_Booking_API.Infrastructure.Data;
+using Hotel_Booking_API.Infrastructure.Data.CompiledQueries;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByHotel
 {
-    public class GetBookingsByHotelQueryHandler : IRequestHandler<GetBookingsByHotelQuery, ApiResponse<PagedList<BookingDto>>>
+    public class GetBookingsByHotelQueryHandler : IRequestHandler<GetBookingsByHotelQuery, ApiResponse<PagedList<BookingsForHotelDto>>>
     {
         private readonly ApplicationDbContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public GetBookingsByHotelQueryHandler(ApplicationDbContext dbContext, IMapper mapper)
+        public GetBookingsByHotelQueryHandler(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
-        public async Task<ApiResponse<PagedList<BookingDto>>> Handle(GetBookingsByHotelQuery request, CancellationToken cancellationToken)
+        public async Task<ApiResponse<PagedList<BookingsForHotelDto>>> Handle(GetBookingsByHotelQuery request, CancellationToken cancellationToken)
         {
             Log.Information("Starting {HandlerName} with request {@Request}", nameof(GetBookingsByHotelQueryHandler), request);
 
@@ -39,23 +38,23 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByH
                     throw new NotFoundException("Hotel", request.HotelId);
                 }
 
-                // Start with base query for hotel bookings
-                IQueryable<Booking> query = _dbContext.Bookings
-                .AsNoTracking()
-                .Where(b => b.Room.HotelId == request.HotelId && !b.IsDeleted);
+                var skip = (request.Pagination.PageNumber - 1) * request.Pagination.PageSize;
 
-                // Get total count for pagination
-                var totalCount = await query.CountAsync(cancellationToken);
+                // Use compiled queries for repeated access pattern
+                var totalCount = await BookingCompiledQueries.CountBookingsByHotelAsync(
+                    _dbContext,
+                    request.HotelId,
+                    cancellationToken);
 
-                var bookings = await query
-                .OrderByDescending(b => b.CreatedAt)
-                .Skip((request.Pagination.PageNumber - 1) * request.Pagination.PageSize)
-                .Take(request.Pagination.PageSize)
-                .ProjectTo<BookingDto>(_mapper.ConfigurationProvider)
-                .ToListAsync(cancellationToken);
+                var bookings = await BookingCompiledQueries.GetBookingsByHotelPageAsync(
+                    _dbContext,
+                    request.HotelId,
+                    skip,
+                    request.Pagination.PageSize,
+                    cancellationToken);
 
                 // Create paginated result
-                var pagedList = new PagedList<BookingDto>(
+                var pagedList = new PagedList<BookingsForHotelDto>(
                     bookings,
                     request.Pagination.PageNumber,
                     request.Pagination.PageSize,
@@ -65,7 +64,7 @@ namespace Hotel_Booking_API.Application.Features.Bookings.Queries.GetBookingsByH
                 Log.Information("Retrieved {Count} bookings for hotel {HotelId} (page {PageNumber}) successfully",
                                 totalCount, request.HotelId, request.Pagination.PageNumber);
 
-                return ApiResponse<PagedList<BookingDto>>.SuccessResponse(pagedList, "Hotel bookings retrieved successfully");
+                return ApiResponse<PagedList<BookingsForHotelDto>>.SuccessResponse(pagedList, "Hotel bookings retrieved successfully");
             }
             catch (Exception ex)
             {
