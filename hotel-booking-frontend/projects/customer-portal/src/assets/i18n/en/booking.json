@@ -1,0 +1,31 @@
+{
+  "booking": {
+    "title": "Complete your booking",
+    "stepDates": "Dates & room",
+    "stepReview": "Review & price",
+    "stepPayment": "Payment",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "roomId": "Room ID",
+    "hotelId": "Hotel ID",
+    "totalPrice": "Total price",
+    "nights": "Nights",
+    "roomPrice": "Room price",
+    "calculatePrice": "Calculate price",
+    "createBooking": "Confirm booking",
+    "payNow": "Pay now",
+    "paymentProcessing": "Processing payment...",
+    "paymentSuccess": "Payment successful!",
+    "paymentFailed": "Payment failed. Please try again.",
+    "loginRequired": "Please sign in to complete your booking.",
+    "missingParams": "Missing booking information. Please start from a hotel.",
+    "loading": "Loading...",
+    "next": "Next",
+    "back": "Back",
+    "confirmationTitle": "Booking confirmed",
+    "confirmationSubtitle": "Your booking has been created.",
+    "bookingId": "Booking ID",
+    "status": "Status",
+    "viewMyBookings": "View my bookings"
+  }
+}

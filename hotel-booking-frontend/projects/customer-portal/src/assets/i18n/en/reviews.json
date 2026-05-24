@@ -1,0 +1,19 @@
+{
+  "reviews": {
+    "title": "Guest reviews",
+    "myReviews": "My reviews",
+    "writeReview": "Write a review",
+    "editReview": "Edit review",
+    "rating": "Rating",
+    "comment": "Comment",
+    "submit": "Submit review",
+    "save": "Save changes",
+    "noReviews": "No reviews yet. Be the first to share your experience.",
+    "reviewBy": "Review by {{name}}",
+    "submitted": "Review submitted. Thank you!",
+    "updated": "Review updated.",
+    "leaveFromBooking": "Share your stay experience — find the hotel under Browse hotels and leave a review on its page.",
+    "stars": "{{count}} stars",
+    "date": "Date"
+  }
+}

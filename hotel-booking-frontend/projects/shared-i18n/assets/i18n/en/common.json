@@ -1,0 +1,46 @@
+{
+  "app": {
+    "title": "Hotel Booking",
+    "customerPortal": "Customer Portal",
+    "adminDashboard": "Admin Dashboard"
+  },
+  "nav": {
+    "home": "Home",
+    "hotels": "Hotels",
+    "myBookings": "My Bookings",
+    "myReviews": "My Reviews",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "dashboard": "Dashboard"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "loginTitle": "Sign in",
+    "registerTitle": "Create account",
+    "submitLogin": "Sign in",
+    "submitRegister": "Register",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "sessionExpired": "Your session has expired. Please sign in again."
+  },
+  "home": {
+    "welcome": "Welcome to Hotel Booking",
+    "subtitle": "Find and book your perfect stay.",
+    "browseHotels": "Browse hotels"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "lang": {
+    "en": "English",
+    "ar": "Arabic"
+  },
+  "common": {
+    "cancel": "Cancel"
+  }
+}

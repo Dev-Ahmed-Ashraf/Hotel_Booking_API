@@ -1,0 +1,30 @@
+{
+  "myBookings": {
+    "title": "حجوزاتي",
+    "hotel": "الفندق",
+    "room": "الغرفة",
+    "checkIn": "تاريخ الوصول",
+    "checkOut": "تاريخ المغادرة",
+    "total": "الإجمالي",
+    "statusLabel": "الحالة",
+    "actions": "إجراءات",
+    "view": "عرض",
+    "noBookings": "ليس لديك حجوزات بعد.",
+    "loading": "جاري التحميل...",
+    "cancel": "إلغاء الحجز",
+    "cancelTitle": "إلغاء الحجز",
+    "cancelReason": "سبب الإلغاء",
+    "confirmCancel": "تأكيد الإلغاء",
+    "close": "إغلاق",
+    "details": "تفاصيل الحجز",
+    "bookingId": "رقم الحجز",
+    "cancellationReason": "سبب الإلغاء",
+    "status": {
+      "pending": "قيد الانتظار",
+      "confirmed": "مؤكد",
+      "cancelled": "ملغى",
+      "completed": "مكتمل",
+      "noShow": "لم يحضر"
+    }
+  }
+}

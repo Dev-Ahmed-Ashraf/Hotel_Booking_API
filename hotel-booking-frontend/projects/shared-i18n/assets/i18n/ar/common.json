@@ -1,0 +1,46 @@
+{
+  "app": {
+    "title": "حجز الفنادق",
+    "customerPortal": "بوابة العملاء",
+    "adminDashboard": "لوحة الإدارة"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "hotels": "الفنادق",
+    "myBookings": "حجوزاتي",
+    "myReviews": "تقييماتي",
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "logout": "تسجيل الخروج",
+    "dashboard": "لوحة التحكم"
+  },
+  "auth": {
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "loginTitle": "تسجيل الدخول",
+    "registerTitle": "إنشاء حساب",
+    "submitLogin": "دخول",
+    "submitRegister": "تسجيل",
+    "noAccount": "ليس لديك حساب؟",
+    "hasAccount": "لديك حساب بالفعل؟",
+    "sessionExpired": "انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى."
+  },
+  "home": {
+    "welcome": "مرحباً بك في حجز الفنادق",
+    "subtitle": "اعثر على إقامتك المثالية واحجزها.",
+    "browseHotels": "تصفح الفنادق"
+  },
+  "theme": {
+    "light": "فاتح",
+    "dark": "داكن"
+  },
+  "lang": {
+    "en": "English",
+    "ar": "العربية"
+  },
+  "common": {
+    "cancel": "إلغاء"
+  }
+}

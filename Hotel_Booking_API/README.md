@@ -529,12 +529,10 @@ The API uses JWT (JSON Web Tokens) for stateless authentication.
 1. **Login**
 
    - Submit credentials to `/api/auth/login`
-   - Receive access token and refresh token
 
    ```json
    {
      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-     "refreshToken": "8bF3f7dE2a...",
      "expiresIn": 3600,
      "tokenType": "Bearer"
    }
@@ -544,10 +542,6 @@ The API uses JWT (JSON Web Tokens) for stateless authentication.
 
    - Include in `Authorization` header for protected endpoints
    - Token expires after 1 hour (configurable)
-
-3. **Refreshing Tokens**
-   - Use the refresh token to get a new access token
-   - POST to `/api/auth/refresh-token` with the refresh token
 
 ### User Roles & Permissions
 

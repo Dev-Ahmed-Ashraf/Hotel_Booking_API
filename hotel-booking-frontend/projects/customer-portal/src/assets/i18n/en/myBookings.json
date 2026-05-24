@@ -1,0 +1,30 @@
+{
+  "myBookings": {
+    "title": "My bookings",
+    "hotel": "Hotel",
+    "room": "Room",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "total": "Total",
+    "statusLabel": "Status",
+    "actions": "Actions",
+    "view": "View",
+    "noBookings": "You have no bookings yet.",
+    "loading": "Loading...",
+    "cancel": "Cancel booking",
+    "cancelTitle": "Cancel booking",
+    "cancelReason": "Reason for cancellation",
+    "confirmCancel": "Confirm cancellation",
+    "close": "Close",
+    "details": "Booking details",
+    "bookingId": "Booking ID",
+    "cancellationReason": "Cancellation reason",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "noShow": "No show"
+    }
+  }
+}

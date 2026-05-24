@@ -1,0 +1,31 @@
+{
+  "booking": {
+    "title": "أكمل حجزك",
+    "stepDates": "التواريخ والغرفة",
+    "stepReview": "المراجعة والسعر",
+    "stepPayment": "الدفع",
+    "checkIn": "تاريخ الوصول",
+    "checkOut": "تاريخ المغادرة",
+    "roomId": "معرف الغرفة",
+    "hotelId": "معرف الفندق",
+    "totalPrice": "السعر الإجمالي",
+    "nights": "الليالي",
+    "roomPrice": "سعر الغرفة",
+    "calculatePrice": "احسب السعر",
+    "createBooking": "تأكيد الحجز",
+    "payNow": "ادفع الآن",
+    "paymentProcessing": "جاري معالجة الدفع...",
+    "paymentSuccess": "تم الدفع بنجاح!",
+    "paymentFailed": "فشل الدفع. يرجى المحاولة مرة أخرى.",
+    "loginRequired": "يرجى تسجيل الدخول لإكمال الحجز.",
+    "missingParams": "معلومات الحجز ناقصة. يرجى البدء من فندق.",
+    "loading": "جاري التحميل...",
+    "next": "التالي",
+    "back": "رجوع",
+    "confirmationTitle": "تم تأكيد الحجز",
+    "confirmationSubtitle": "تم إنشاء حجزك.",
+    "bookingId": "رقم الحجز",
+    "status": "الحالة",
+    "viewMyBookings": "عرض حجوزاتي"
+  }
+}
