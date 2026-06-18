@@ -330,11 +330,11 @@ namespace Hotel_Booking_API
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             // Swagger UI
-            if (app.Environment.IsDevelopment())
-            {
+            //if (app.Environment.IsDevelopment())
+            //{
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            //}
 
             // Enforce HTTPS
             app.UseHttpsRedirection();
