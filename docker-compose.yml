@@ -15,13 +15,6 @@ services:
     build:
       context: ./Hotel_Booking_API
       dockerfile: Dockerfile
-      args:
-        JwtSettings__SecretKey: ${JwtSettings__SecretKey}
-        Stripe__ApiKey: ${Stripe__ApiKey}
-        Stripe__PublishableKey: ${Stripe__PublishableKey}
-        Stripe__WebhookSecret: ${Stripe__WebhookSecret}
-        SmtpSettings__Username: ${SmtpSettings__Username}
-        SmtpSettings__Password: ${SmtpSettings__Password}
 
     environment:
       ASPNETCORE_ENVIRONMENT: Development
