@@ -334,7 +334,7 @@ namespace Hotel_Booking_API
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-        }
+            }
 
         // Enforce HTTPS
         app.UseHttpsRedirection();

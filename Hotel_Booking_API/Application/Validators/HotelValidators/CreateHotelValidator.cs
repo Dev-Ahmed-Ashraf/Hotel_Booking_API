@@ -29,7 +29,7 @@ namespace Hotel_Booking_API.Application.Validators.HotelValidators
                 .MinimumLength(10).WithMessage("Address must be at least 10 characters")
                 .MaximumLength(500).WithMessage("Address cannot exceed 500 characters")
                 .Matches(@"^[A-Za-z0-9\s\-\.#,]+$").WithMessage("Address can only contain letters, numbers, spaces, hyphens, dots, commas, and hash symbols");
-
+                
             // Validate city
             RuleFor(x => x.CreateHotelDto.City)
                 .NotEmpty().WithMessage("City is required")
