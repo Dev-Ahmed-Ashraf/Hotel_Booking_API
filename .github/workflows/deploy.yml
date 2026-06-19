@@ -27,7 +27,10 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:${{ github.sha }} .
+          docker build \
+            -f ./Hotel_Booking_API/Dockerfile \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:${{ github.sha }} \
+            ./Hotel_Booking_API
 
       - name: Push Docker image
         run: |
