@@ -30,14 +30,16 @@ jobs:
           docker build \
             -f ./Hotel_Booking_API/Dockerfile \
             -t ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:${{ github.sha }} \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:latest \
             ./Hotel_Booking_API
 
       - name: Push Docker image
         run: |
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:${{ github.sha }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:latest
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          images: ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:${{ github.sha }}
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:latest

@@ -83,3 +83,21 @@ _ReSharper*/
 
 # Fody
 FodyWeavers.xsd
+/Jenkinsfile
+/hotel-booking-frontend/tsconfig.json
+/hotel-booking-frontend/tailwind.config.js
+/hotel-booking-frontend/README.md
+/hotel-booking-frontend/postcss.config.json
+/hotel-booking-frontend/playwright.config.ts
+/hotel-booking-frontend/package.json
+/hotel-booking-frontend/package-lock.json
+/hotel-booking-frontend/.editorconfig
+/hotel-booking-frontend/postcss.config.js
+/hotel-booking-frontend/angular.json
+/hotel-booking-frontend/DEPLOYMENT.md
+/hotel-booking-frontend/.gitignore
+/hotel-booking-frontend/tools/openapi/ng-openapi-gen.json
+/hotel-booking-frontend/tools/openapi/swagger.json
+/hotel-booking-frontend/scripts/patch-tsconfig.mjs
+/hotel-booking-frontend/e2e/admin-smoke.spec.ts
+/hotel-booking-frontend/e2e/customer-smoke.spec.ts
