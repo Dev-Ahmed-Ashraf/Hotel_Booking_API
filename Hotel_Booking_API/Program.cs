@@ -18,6 +18,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Core;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -48,7 +49,14 @@ namespace Hotel_Booking_API
                 {
                     using var scope = app.Services.CreateScope();
                     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    db.Database.Migrate();
+                    try
+                    {
+                        db.Database.Migrate();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Database migration failed");
+                    }
                 }
 
                 ConfigureMiddleware(app);
@@ -81,7 +89,15 @@ namespace Hotel_Booking_API
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(
+                    connectionString,
+                    sqlOptions =>
+                    {
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(30),
+                            errorNumbersToAdd: null);
+                    }));
 
             // -----------------------------
             // Repositories & Unit of Work
