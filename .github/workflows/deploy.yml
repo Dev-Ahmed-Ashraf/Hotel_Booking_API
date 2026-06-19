@@ -42,8 +42,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          # Use immutable SHA tag — App Service often keeps a cached :latest image
-          images: ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:${{ github.sha }}
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:latest
 
       - name: Restart Web App
         run: az webapp restart --name ${{ secrets.AZURE_WEBAPP_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }}
