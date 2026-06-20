@@ -343,6 +343,19 @@ namespace Hotel_Booking_API
         /// </summary>
         private static void ConfigureMiddleware(WebApplication app)
         {
+            app.Use(async (context, next) =>
+            {
+                try
+                {
+                    await next();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"UNHANDLED EXCEPTION: {ex}");
+                    throw;
+                }
+            });
+
             // Must come first: Global exception handler
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
