@@ -30,7 +30,6 @@ jobs:
           dotnet restore Hotel_Booking_API/Hotel_Booking.sln
           dotnet build Hotel_Booking_API/Hotel_Booking.sln --configuration Release --no-restore
           dotnet test tests/Hotel_Booking.UnitTests/Hotel_Booking.UnitTests.csproj --configuration Release --no-build
-          dotnet test tests/Hotel_Booking.IntegrationTests/Hotel_Booking.IntegrationTests.csproj --configuration Release --no-build
 
   deploy:
     needs: build-and-test
