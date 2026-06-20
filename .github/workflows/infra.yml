@@ -1,0 +1,79 @@
+name: Deploy Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: prod
+        type: choice
+        options:
+          - prod
+          - staging
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  LOCATION: eastus
+  PROJECT_NAME: hotelbooking
+
+jobs:
+  deploy-infra:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create resource group
+        run: |
+          az group create \
+            --name "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --location "${{ env.LOCATION }}"
+
+      - name: Deploy Bicep
+        run: |
+          az deployment group create \
+            --name "hotel-booking-${{ inputs.environment }}-$(date +%Y%m%d%H%M%S)" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --template-file infra/main.bicep \
+            --parameters \
+              environmentName=${{ inputs.environment }} \
+              projectName=${{ env.PROJECT_NAME }} \
+              location=${{ env.LOCATION }} \
+              sqlAdminLogin=${{ secrets.SQL_ADMIN_LOGIN }} \
+              sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }} \
+              jwtSecretKey=${{ secrets.JWT_SECRET_KEY }} \
+              corsAllowedOrigins="${{ vars.CORS_ALLOWED_ORIGINS }}" \
+              stripeApiKey=${{ secrets.STRIPE_API_KEY }} \
+              stripeWebhookSecret=${{ secrets.STRIPE_WEBHOOK_SECRET }}
+
+      - name: Grant GitHub Actions ACR push access
+        run: |
+          DEPLOYER_OBJECT_ID=$(az ad sp show --id "${{ secrets.AZURE_CLIENT_ID }}" --query id -o tsv)
+          ACR_NAME=$(az acr list --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --query "[0].name" -o tsv)
+          ACR_ID=$(az acr show --name "$ACR_NAME" --query id -o tsv)
+          az role assignment create \
+            --assignee-object-id "$DEPLOYER_OBJECT_ID" \
+            --assignee-principal-type ServicePrincipal \
+            --role AcrPush \
+            --scope "$ACR_ID" \
+            || echo "ACR push role may already exist."
+
+      - name: Output deployment summary
+        run: |
+          az deployment group list \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --query "[?contains(name, 'hotel-booking')].{name:name, outputs:properties.outputs}" \
+            -o json

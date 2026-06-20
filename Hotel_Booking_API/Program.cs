@@ -190,7 +190,8 @@ namespace Hotel_Booking_API
             // -----------------------------
             // Health Checks
             // -----------------------------
-            services.AddHealthChecks();
+            services.AddHealthChecks()
+                .AddDbContextCheck<ApplicationDbContext>(name: "database", tags: new[] { "ready" });
 
             // -----------------------------
             // Memory Cache
@@ -393,8 +394,15 @@ namespace Hotel_Booking_API
             // Map API controllers
             app.MapControllers();
 
-            // Health checks endpoint
             app.MapHealthChecks("/health");
+            app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("ready")
+            });
+            app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+            {
+                Predicate = _ => false
+            });
         }
     }
 }

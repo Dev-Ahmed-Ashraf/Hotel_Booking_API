@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Hotel_Booking_API/Hotel_Booking.sln
+
+      - name: Build
+        run: dotnet build Hotel_Booking_API/Hotel_Booking.sln --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: dotnet test tests/Hotel_Booking.UnitTests/Hotel_Booking.UnitTests.csproj --configuration Release --no-build --verbosity normal
+
+      - name: Run integration tests
+        run: dotnet test tests/Hotel_Booking.IntegrationTests/Hotel_Booking.IntegrationTests.csproj --configuration Release --no-build --verbosity normal
+
+      - name: Build Docker image
+        run: docker build -f Hotel_Booking_API/Dockerfile -t hotel-booking-api:ci ./Hotel_Booking_API

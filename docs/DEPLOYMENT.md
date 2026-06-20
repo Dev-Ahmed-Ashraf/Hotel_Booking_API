@@ -118,32 +118,129 @@ docker logs hotel-booking-api
 
 ## Azure App Service
 
-### 1. Create Azure Resources
-```bash
-# Login to Azure
-az login
+For production Azure deployment, this repository includes Infrastructure as Code (Bicep) and GitHub Actions workflows with **OIDC** (no long-lived Azure passwords in GitHub).
 
-# Create Resource Group
-az group create --name HotelBookingRG --location eastus
+### Architecture
 
-# Create App Service Plan
-az appservice plan create --name HotelBookingPlan --resource-group HotelBookingRG --sku B1 --is-linux
+| Component | Azure Service | Purpose |
+|-----------|---------------|---------|
+| API | App Service (Linux container) | Hosts the Docker image from ACR |
+| Database | Azure SQL Database | Production SQL Server |
+| Registry | Azure Container Registry | Stores versioned API images |
+| Secrets | Azure Key Vault | Connection strings, JWT, Stripe keys |
+| Monitoring | Application Insights + Log Analytics | Logs, metrics, alerts |
 
-# Create Web App
-az webapp create --resource-group HotelBookingRG --plan HotelBookingPlan --name hotelbooking-$(date +%s) --runtime "DOTNET:8.0"
+### One-time setup
 
-# Configure App Settings
-az webapp config appsettings set --resource-group HotelBookingRG --name <app-name> --settings \
-  "ConnectionStrings__DefaultConnection=Server=tcp:<server-name>.database.windows.net,1433;Database=HotelBooking;User ID=<db-user>;Password=<db-password>;Encrypt=true;" \
-  "JwtSettings__SecretKey=<your-jwt-secret>"
+#### 1. Install tools
+
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)
+- [Bicep CLI](https://learn.microsoft.com/azure/azure-resource-manager/bicep/install) (included with recent Azure CLI)
+
+#### 2. Configure GitHub OIDC (recommended)
+
+Run from PowerShell (replace values):
+
+```powershell
+./scripts/setup-azure-oidc.ps1 `
+  -SubscriptionId "<your-subscription-id>" `
+  -ResourceGroup "rg-hotelbooking-prod" `
+  -GitHubOrg "<your-github-org>" `
+  -GitHubRepo "Hotel_Booking_API"
 ```
 
-### 2. Deploy from GitHub
-1. Go to Azure Portal > Your App Service > Deployment Center
-2. Select GitHub as source
-3. Authorize and select your repository and branch
-4. Configure the build process
-5. Save and deploy
+Add the printed values as GitHub Actions **secrets**:
+
+| Secret | Description |
+|--------|-------------|
+| `AZURE_CLIENT_ID` | App Registration client ID |
+| `AZURE_TENANT_ID` | Azure AD tenant ID |
+| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID |
+| `AZURE_RESOURCE_GROUP` | e.g. `rg-hotelbooking-prod` |
+| `AZURE_WEBAPP_NAME` | From Bicep output after infra deploy |
+| `SQL_ADMIN_LOGIN` | SQL admin username |
+| `SQL_ADMIN_PASSWORD` | Strong SQL password |
+| `JWT_SECRET_KEY` | Long random JWT signing key (32+ chars) |
+| `STRIPE_API_KEY` | Optional |
+| `STRIPE_WEBHOOK_SECRET` | Optional |
+
+Add GitHub Actions **variables**:
+
+| Variable | Example |
+|----------|---------|
+| `CORS_ALLOWED_ORIGINS` | `https://your-frontend.com,http://localhost:3000` |
+| `ACR_NAME` | From Bicep output (`acrName`) |
+
+Create a GitHub **environment** named `production` (and optionally `staging`) under Settings → Environments.
+
+#### 3. Deploy infrastructure
+
+**Option A — GitHub Actions (recommended)**
+
+1. Go to **Actions → Deploy Infrastructure → Run workflow**
+2. Choose `prod` or `staging`
+3. Copy outputs: `webAppName`, `acrName`, `webAppUrl`
+4. Set `AZURE_WEBAPP_NAME` and `ACR_NAME` in GitHub secrets/variables
+
+**Option B — Azure CLI locally**
+
+```bash
+az login
+az group create --name rg-hotelbooking-prod --location eastus
+
+export SQL_ADMIN_PASSWORD='YourStrong!Passw0rd'
+export JWT_SECRET_KEY='your-long-random-jwt-secret-key-at-least-32-chars'
+
+az deployment group create \
+  --resource-group rg-hotelbooking-prod \
+  --template-file infra/main.bicep \
+  --parameters @infra/main.prod.bicepparam \
+  --parameters sqlAdminPassword="$SQL_ADMIN_PASSWORD" jwtSecretKey="$JWT_SECRET_KEY"
+```
+
+### Continuous deployment
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ci.yml` | Push / PR to `main` | Build, test, verify Docker image |
+| `infra.yml` | Manual | Deploy/update Azure resources |
+| `deploy.yml` | Push to `main` | Build image → push to ACR → deploy to App Service |
+
+After infrastructure is in place, every push to `main` runs tests, builds a Docker image tagged with the Git commit SHA, deploys to App Service, and verifies `/health`.
+
+### Post-deployment checks
+
+```bash
+# Stream logs
+az webapp log tail --name <web-app-name> --resource-group rg-hotelbooking-prod
+
+# Health endpoints
+curl https://<web-app-name>.azurewebsites.net/health
+curl https://<web-app-name>.azurewebsites.net/health/ready
+
+# Swagger
+open https://<web-app-name>.azurewebsites.net/swagger
+```
+
+### Security best practices (included)
+
+- Managed Identity for ACR pull and Key Vault access (no registry passwords on the Web App)
+- GitHub OIDC instead of storing service principal secrets in `AZURE_CREDENTIALS`
+- Secrets stored in Key Vault, referenced by App Service settings
+- HTTPS-only Web App, TLS 1.2+, health check path configured
+- Immutable image tags (`github.sha`) for each deployment
+
+### Manual fallback (legacy)
+
+If you prefer portal-based setup without Bicep:
+
+```bash
+az group create --name HotelBookingRG --location eastus
+az appservice plan create --name HotelBookingPlan --resource-group HotelBookingRG --sku B1 --is-linux
+az webapp create --resource-group HotelBookingRG --plan HotelBookingPlan --name hotelbooking-<unique> --deployment-container-image-name <acr>.azurecr.io/hotel-booking-api:latest
+```
+
+Configure app settings for connection string, JWT, and CORS in the Azure Portal or via CLI.
 
 ## Kubernetes
 

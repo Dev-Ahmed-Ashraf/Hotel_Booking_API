@@ -4,45 +4,88 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  IMAGE_NAME: hotel-booking-api
 
 jobs:
-  deploy:
+  build-and-test:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore, build, and test
+        run: |
+          dotnet restore Hotel_Booking_API/Hotel_Booking.sln
+          dotnet build Hotel_Booking_API/Hotel_Booking.sln --configuration Release --no-restore
+          dotnet test tests/Hotel_Booking.UnitTests/Hotel_Booking.UnitTests.csproj --configuration Release --no-build
+          dotnet test tests/Hotel_Booking.IntegrationTests/Hotel_Booking.IntegrationTests.csproj --configuration Release --no-build
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Azure Login
+      - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Resolve ACR details
+        id: acr
+        run: |
+          ACR_NAME="${{ vars.ACR_NAME }}"
+          if [ -z "$ACR_NAME" ]; then
+            ACR_NAME=$(az acr list --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --query "[0].name" -o tsv)
+          fi
+          ACR_LOGIN_SERVER=$(az acr show --name "$ACR_NAME" --query loginServer -o tsv)
+          echo "name=$ACR_NAME" >> "$GITHUB_OUTPUT"
+          echo "login_server=$ACR_LOGIN_SERVER" >> "$GITHUB_OUTPUT"
 
       - name: Login to ACR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.ACR_LOGIN_SERVER }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+        run: az acr login --name ${{ steps.acr.outputs.name }}
 
-      - name: Build Docker image
+      - name: Build and push Docker image
         run: |
-          docker build \
-            -f ./Hotel_Booking_API/Dockerfile \
-            -t ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:${{ github.sha }} \
-            -t ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:latest \
-            ./Hotel_Booking_API
-
-      - name: Push Docker image
-        run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:${{ github.sha }}
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:latest
+          IMAGE="${{ steps.acr.outputs.login_server }}/${{ env.IMAGE_NAME }}"
+          docker build -f Hotel_Booking_API/Dockerfile -t "$IMAGE:${{ github.sha }}" -t "$IMAGE:latest" ./Hotel_Booking_API
+          docker push "$IMAGE:${{ github.sha }}"
+          docker push "$IMAGE:latest"
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          images: ${{ secrets.ACR_LOGIN_SERVER }}/hotel-booking-api:latest
+          images: ${{ steps.acr.outputs.login_server }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-      - name: Restart Web App
-        run: az webapp restart --name ${{ secrets.AZURE_WEBAPP_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }}
+      - name: Smoke test
+        run: |
+          URL="https://${{ secrets.AZURE_WEBAPP_NAME }}.azurewebsites.net/health"
+          echo "Checking $URL"
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$URL"; then
+              echo "Health check passed."
+              exit 0
+            fi
+            echo "Attempt $attempt failed, retrying in 10s..."
+            sleep 10
+          done
+          echo "Health check failed after 30 attempts."
+          exit 1
