@@ -8,10 +8,10 @@ param jwtSecretKey string
 param sqlConnectionString string
 
 @secure()
-param stripeApiKey string = ''
+param stripeApiKey string
 
 @secure()
-param stripeWebhookSecret string = ''
+param stripeWebhookSecret string
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
