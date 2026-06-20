@@ -112,15 +112,6 @@ module appService 'modules/app-service.bicep' = {
   }
 }
 
-module rbac 'modules/rbac.bicep' = {
-  name: 'rbac-deployment'
-  params: {
-    acrName: acr.outputs.name
-    keyVaultName: keyVault.outputs.keyVaultName
-    webAppPrincipalId: appService.outputs.webAppPrincipalId
-  }
-}
-
 output acrLoginServer string = acr.outputs.loginServer
 output acrName string = acr.outputs.name
 output webAppName string = appService.outputs.webAppName
