@@ -67,15 +67,18 @@ namespace Hotel_Booking_API
                 Log.Fatal(ex, "Application terminated unexpectedly");
                 throw;
             }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
         }
 
         public static void Main(string[] args)
         {
-            BuildWebApp(args).Run();
+            try
+            {
+                BuildWebApp(args).Run();
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         /// <summary>
