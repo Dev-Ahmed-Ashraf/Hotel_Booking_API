@@ -1,4 +1,5 @@
 using Hotel_Booking_API.Domain.Entities;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Hotel_Booking_API.Domain.Interfaces
 {
@@ -16,5 +17,6 @@ namespace Hotel_Booking_API.Domain.Interfaces
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();
+        IExecutionStrategy CreateExecutionStrategy();
     }
 }

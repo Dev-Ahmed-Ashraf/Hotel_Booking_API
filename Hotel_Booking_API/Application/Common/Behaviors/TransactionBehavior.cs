@@ -1,5 +1,6 @@
 using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hotel_Booking_API.Application.Common.Behaviors
 {
@@ -31,27 +32,31 @@ namespace Hotel_Booking_API.Application.Common.Behaviors
             RequestHandlerDelegate<TResponse> next,
             CancellationToken cancellationToken)
         {
-            // Skip transactions for queries
             if (typeof(TRequest).Name.EndsWith("Query"))
             {
                 return await next();
             }
 
-            try
+            var strategy = _unitOfWork.CreateExecutionStrategy();
+
+            return await strategy.ExecuteAsync(async () =>
             {
                 await _unitOfWork.BeginTransactionAsync();
 
-                var response = await next();
+                try
+                {
+                    var response = await next();
 
-                await _unitOfWork.CommitTransactionAsync();
+                    await _unitOfWork.CommitTransactionAsync();
 
-                return response;
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+                    return response;
+                }
+                catch
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    throw;
+                }
+            });
         }
     }
 }

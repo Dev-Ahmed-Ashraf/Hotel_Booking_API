@@ -89,5 +89,9 @@ namespace Hotel_Booking_API.Infrastructure.Repositories
             _transaction?.Dispose();
             _context.Dispose();
         }
+        public IExecutionStrategy CreateExecutionStrategy()
+        {
+            return _context.Database.CreateExecutionStrategy();
+        }
     }
 }
