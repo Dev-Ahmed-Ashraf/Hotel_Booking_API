@@ -44,7 +44,7 @@ param stripeWebhookSecret string = ''
 
 var uniqueSuffix = uniqueString(resourceGroup().id, projectName, environmentName)
 var acrName = toLower('${projectName}${environmentName}${uniqueSuffix}')
-var keyVaultName = toLower('kv-${projectName}-${environmentName}-${take(uniqueSuffix, 6)}')
+var keyVaultName = toLower('kvhotel${take(uniqueString(resourceGroup().id), 8)}')
 var sqlServerName = toLower('sql-${projectName}-${environmentName}-${take(uniqueSuffix, 6)}')
 var appServicePlanName = 'asp-${projectName}-${environmentName}'
 var webAppName = toLower('app-${projectName}-${environmentName}-${take(uniqueSuffix, 6)}')
