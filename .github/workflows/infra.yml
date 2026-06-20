@@ -59,17 +59,17 @@ jobs:
               stripeApiKey=${{ secrets.STRIPE_API_KEY }} \
               stripeWebhookSecret=${{ secrets.STRIPE_WEBHOOK_SECRET }}
 
-      - name: Grant GitHub Actions ACR push access
-        run: |
-          DEPLOYER_OBJECT_ID=$(az ad sp show --id "${{ secrets.AZURE_CLIENT_ID }}" --query id -o tsv)
-          ACR_NAME=$(az acr list --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --query "[0].name" -o tsv)
-          ACR_ID=$(az acr show --name "$ACR_NAME" --query id -o tsv)
-          az role assignment create \
-            --assignee-object-id "$DEPLOYER_OBJECT_ID" \
-            --assignee-principal-type ServicePrincipal \
-            --role AcrPush \
-            --scope "$ACR_ID" \
-            || echo "ACR push role may already exist."
+      # - name: Grant GitHub Actions ACR push access
+      #   run: |
+      #     DEPLOYER_OBJECT_ID=$(az ad sp show --id "${{ secrets.AZURE_CLIENT_ID }}" --query id -o tsv)
+      #     ACR_NAME=$(az acr list --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --query "[0].name" -o tsv)
+      #     ACR_ID=$(az acr show --name "$ACR_NAME" --query id -o tsv)
+      #     az role assignment create \
+      #       --assignee-object-id "$DEPLOYER_OBJECT_ID" \
+      #       --assignee-principal-type ServicePrincipal \
+      #       --role AcrPush \
+      #       --scope "$ACR_ID" \
+      #       || echo "ACR push role may already exist."
 
       - name: Output deployment summary
         run: |
