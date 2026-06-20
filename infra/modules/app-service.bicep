@@ -13,9 +13,9 @@ param corsAllowedOrigins string
 
 var imageName = '${acrLoginServer}/hotel-booking-api:latest'
 var keyVaultReferencePrefix = '@Microsoft.KeyVault(SecretUri=${keyVaultUri}secrets/'
-var corsOrigins = [for (origin, index) in split(corsAllowedOrigins, ',') if !empty(trim(origin)): {
+var corsOrigins = [for (origin, index) in split(corsAllowedOrigins, ','): {
   name: 'Cors__AllowedOrigins__${index}'
-  value: trim(origin)
+  value: origin
 }]
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
