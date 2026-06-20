@@ -31,30 +31,26 @@ namespace Hotel_Booking_API.Application.Common.Behaviors
             RequestHandlerDelegate<TResponse> next,
             CancellationToken cancellationToken)
         {
-            // If the request is not a MediatR command or query, skip (defensive check)
-            if (request is not IRequest<TResponse>)
+            // Skip transactions for queries
+            if (typeof(TRequest).Name.EndsWith("Query"))
             {
                 return await next();
             }
 
             try
             {
-                // Start a new DB transaction before handler execution
                 await _unitOfWork.BeginTransactionAsync();
 
-                // Execute the actual command handler
                 var response = await next();
 
-                // If successful, commit all changes
                 await _unitOfWork.CommitTransactionAsync();
 
                 return response;
             }
             catch
             {
-                // If handler throws an exception, rollback applied changes
                 await _unitOfWork.RollbackTransactionAsync();
-                throw; // rethrow to middleware
+                throw;
             }
         }
     }
