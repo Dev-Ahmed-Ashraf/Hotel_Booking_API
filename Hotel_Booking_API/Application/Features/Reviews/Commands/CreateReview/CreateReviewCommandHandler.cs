@@ -1,5 +1,6 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Hotel_Booking_API.Application.AI.Services;
 using Hotel_Booking_API.Application.Common;
 using Hotel_Booking_API.Application.Common.Exceptions;
 using Hotel_Booking_API.Application.DTOs;
@@ -9,6 +10,7 @@ using Hotel_Booking_API.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Text.Json;
 
 namespace Hotel_Booking_API.Application.Features.Reviews.Commands.CreateReview
 {
@@ -20,11 +22,13 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.CreateReview
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IReviewAnalysisService _reviewAnalysisService;
 
-        public CreateReviewCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateReviewCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IReviewAnalysisService reviewAnalysisService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _reviewAnalysisService = reviewAnalysisService;
         }
 
         public async Task<ApiResponse<ReviewDto>> Handle(CreateReviewCommand request, CancellationToken cancellationToken)
@@ -85,11 +89,19 @@ namespace Hotel_Booking_API.Application.Features.Reviews.Commands.CreateReview
                     throw new BadRequestException("You cannot review a hotel unless you have completed a stay.");
                 }
 
+                var analysis = await _reviewAnalysisService
+                    .AnalyzeAsync(request.CreateReviewDto.Comment);
+
                 // Map DTO to entity and set values
                 var review = _mapper.Map<Review>(request.CreateReviewDto);
                 review.UserId = request.UserId;
                 review.CreatedAt = DateTime.UtcNow;
                 review.UpdatedAt = DateTime.UtcNow;
+                review.Sentiment = analysis.Sentiment;
+                review.AiSummary = analysis.AISummary;
+                review.Issues = JsonSerializer.Serialize(analysis.issues);
+                review.Positives = JsonSerializer.Serialize(analysis.positives);
+
 
                 // Add review to repository and save changes
                 await _unitOfWork.Reviews.AddAsync(review, cancellationToken);

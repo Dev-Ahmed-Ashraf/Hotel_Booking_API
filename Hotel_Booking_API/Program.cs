@@ -1,4 +1,6 @@
 ﻿using FluentValidation;
+using Hotel_Booking_API.Application.AI;
+using Hotel_Booking_API.Application.AI.Services;
 using Hotel_Booking_API.Application.Common.Behaviors;
 using Hotel_Booking_API.Application.Common.Interfaces;
 using Hotel_Booking_API.Application.Features.Payments.Services;
@@ -19,6 +21,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Core;
+using Stripe;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -136,6 +139,12 @@ namespace Hotel_Booking_API
             // AutoMapper
             // -----------------------------
             services.AddAutoMapper(typeof(MappingProfile));
+
+            // -----------------------------
+            // AI Services
+            // -----------------------------
+            services.AddScoped<IReviewAnalysisService, ReviewAnalysisService>();
+
 
             // -----------------------------
             // FluentValidation + Pipeline Behaviors
@@ -336,9 +345,15 @@ namespace Hotel_Booking_API
                 // Include XML Comments
                 var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                if (File.Exists(xmlPath))
+                if (System.IO.File.Exists(xmlPath))
                     c.IncludeXmlComments(xmlPath);
             });
+
+            services.AddHttpClient<IReviewAnalysisService, ReviewAnalysisService>();
+
+            services.Configure<GroqSettings>(configuration.GetSection("Groq"));
+
+
         }
 
         /// <summary>
